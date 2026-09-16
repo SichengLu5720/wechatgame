@@ -13,7 +13,7 @@ Last Updated: 2026-09-16
 - Engine Version: 6000.0.26f1
 - Primary Language: C#
 - Repository Root: `D:\群岛-harness`
-- Source Control: 当前目录尚未初始化为 Git 仓库
+- Source Control: Git；`main` 跟踪 `https://github.com/SichengLu5720/wechatgame.git`
 - Current Development Stage: Prototype
 - Primary Target Platform: 微信小游戏（Unity WebGL 转换）
 - Other Confirmed Build Target: Windows x64，用于本地运行和验证
@@ -52,14 +52,6 @@ Last Updated: 2026-09-16
 - Windows 与 Unity Editor 首页可通过 `Ctrl+Shift+E` 打开关卡编辑器；首页也提供编辑器按钮。
 - `Escape` 用于取消道具选择或关闭关卡选择；设置界面打开时用于关闭设置。
 
-### Combat / Interaction
-
-- 本项目没有战斗系统；核心交互是平台间的人群排序与路径移动。
-- 默认平台容量为 4 个人群组，即 16 名角色。
-- 来源平台为空、已完成、被封印、固定不可搬出，或目标已满/已完成时，移动无效。
-- 非空目标的前排颜色必须与来源前排颜色一致。
-- 中转平台只能容纳单一颜色。
-- 路径可经过空的、未封印的平台；被占用的中间落脚点会阻断路径。
 
 ### Progression / Economy
 
@@ -139,7 +131,7 @@ Last Updated: 2026-09-16
 
 ## Project Commands
 
-以下命令入口均来自现有 Editor 脚本。当前机器未在 Unity Hub 默认目录中检测到 Unity Editor，因此本次未实际执行；使用时将 `<Unity.exe>` 替换为 Unity 6000.0.26f1 的编辑器路径。
+以下命令入口均来自现有 Editor 脚本。当前开发机的 Unity 6000.0.26f1 位于 `D:\GameDev\Tools\Unity\6000.0.26f1\Editor\Unity.exe`。
 
 ### Run
 
@@ -150,7 +142,7 @@ Last Updated: 2026-09-16
 ### Build / Compile
 
 ```text
-<Unity.exe> -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod UnityBuild.Build -logFile -
+"D:\GameDev\Tools\Unity\6000.0.26f1\Editor\Unity.exe" -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod UnityBuild.Build -logFile -
 ```
 
 输出：`Builds/Windows/StairsCrowd.exe`。
@@ -158,8 +150,8 @@ Last Updated: 2026-09-16
 ### Tests
 
 ```text
-<Unity.exe> -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod UnityBuild.Verify -logFile -
-<Unity.exe> -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod UnityBuild.VerifyAlternatives -logFile -
+"D:\GameDev\Tools\Unity\6000.0.26f1\Editor\Unity.exe" -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod UnityBuild.Verify -logFile -
+"D:\GameDev\Tools\Unity\6000.0.26f1\Editor\Unity.exe" -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod UnityBuild.VerifyAlternatives -logFile -
 ```
 
 关卡交付检查另有 `LevelDeliveryCheck.Run`；它要求通过 `-deliveryFolder <目录>` 提供包含 `candidate.json` 的交付目录。
@@ -173,7 +165,7 @@ Not documented.
 ### Export / Package
 
 ```text
-<Unity.exe> -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod WeChatBuild.Export -logFile -
+"D:\GameDev\Tools\Unity\6000.0.26f1\Editor\Unity.exe" -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod WeChatBuild.Export -logFile -
 ```
 
 输出：`Builds/WeChat/minigame`。导出前可在 Unity 菜单中使用 `群岛/微信小游戏/配置并打开转换面板`；AppID、设备验证、上传和发布仍需人工完成并明确授权。
