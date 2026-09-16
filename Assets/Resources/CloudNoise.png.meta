@@ -1,0 +1,31 @@
+fileFormatVersion: 2
+guid: 31adf75d08b54a258f105536b6b718e2
+TextureImporter:
+  serializedVersion: 13
+  mipmaps:
+    enableMipMap: 0
+    sRGBTexture: 0
+  isReadable: 0
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 0
+    mipBias: 0
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
+  maxTextureSize: 128
+  textureType: 0
+  textureShape: 1
+  alphaSource: 0
+  textureCompression: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 128
+    resizeAlgorithm: 0
+    textureFormat: 63
+    textureCompression: 0
+    compressionQuality: 100
+    overridden: 0
+  userData: Shared linear R8 cloud noise lattice; no mipmaps or CPU copy.

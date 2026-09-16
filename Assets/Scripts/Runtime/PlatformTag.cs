@@ -1,0 +1,1 @@
+using UnityEngine; namespace StairsCrowd.Runtime { public sealed class PlatformTag : MonoBehaviour { public int node; } }

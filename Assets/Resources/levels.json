@@ -1,0 +1,1229 @@
+{
+    "levels": [
+        {
+            "name": "雾后色彩",
+            "tip": "",
+            "nodes": [
+                {
+                    "x": -3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 0,
+                    "queue": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 1,
+                    "queue": [
+                        4,
+                        5,
+                        6,
+                        7
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 2.799999952316284,
+                    "z": 2.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": -3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": 3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": []
+                },
+                {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 7.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": []
+                }
+            ],
+            "edges": [
+                {
+                    "a": 0,
+                    "b": 2
+                },
+                {
+                    "a": 1,
+                    "b": 2
+                },
+                {
+                    "a": 2,
+                    "b": 3
+                },
+                {
+                    "a": 2,
+                    "b": 4
+                },
+                {
+                    "a": 3,
+                    "b": 5
+                },
+                {
+                    "a": 4,
+                    "b": 5
+                }
+            ],
+            "groups": [
+                {
+                    "id": 0,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 1,
+                    "color": 1,
+                    "hidden": true
+                },
+                {
+                    "id": 2,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 3,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 4,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 5,
+                    "color": 0,
+                    "hidden": true
+                },
+                {
+                    "id": 6,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 7,
+                    "color": 0,
+                    "hidden": false
+                }
+            ],
+            "solution": [
+                {
+                    "a": 0,
+                    "b": 3
+                },
+                {
+                    "a": 0,
+                    "b": 4
+                },
+                {
+                    "a": 0,
+                    "b": 3
+                },
+                {
+                    "a": 1,
+                    "b": 0
+                },
+                {
+                    "a": 1,
+                    "b": 3
+                },
+                {
+                    "a": 1,
+                    "b": 0
+                },
+                {
+                    "a": 3,
+                    "b": 1
+                },
+                {
+                    "a": 4,
+                    "b": 0
+                }
+            ]
+        },
+        {
+            "name": "唤醒封印",
+            "tip": "",
+            "nodes": [
+                {
+                    "x": -3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 0,
+                    "queue": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 1,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 1,
+                    "queue": [
+                        4
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 2.799999952316284,
+                    "z": 2.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": -3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": [
+                        5
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": [
+                        6
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 7.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": [
+                        7
+                    ]
+                }
+            ],
+            "edges": [
+                {
+                    "a": 0,
+                    "b": 2
+                },
+                {
+                    "a": 1,
+                    "b": 2
+                },
+                {
+                    "a": 2,
+                    "b": 3
+                },
+                {
+                    "a": 2,
+                    "b": 4
+                },
+                {
+                    "a": 3,
+                    "b": 5
+                },
+                {
+                    "a": 4,
+                    "b": 5
+                }
+            ],
+            "groups": [
+                {
+                    "id": 0,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 1,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 2,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 3,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 4,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 5,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 6,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 7,
+                    "color": 0,
+                    "hidden": false
+                }
+            ],
+            "solution": [
+                {
+                    "a": 0,
+                    "b": 3
+                },
+                {
+                    "a": 0,
+                    "b": 4
+                },
+                {
+                    "a": 0,
+                    "b": 3
+                },
+                {
+                    "a": 0,
+                    "b": 4
+                },
+                {
+                    "a": 3,
+                    "b": 0
+                },
+                {
+                    "a": 5,
+                    "b": 0
+                },
+                {
+                    "a": 4,
+                    "b": 1
+                }
+            ]
+        },
+        {
+            "name": "留下的颜色",
+            "tip": "",
+            "nodes": [
+                {
+                    "x": -3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": true,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 0,
+                    "queue": [
+                        0
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 1,
+                    "queue": [
+                        1,
+                        2,
+                        3,
+                        4
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 2.799999952316284,
+                    "z": 2.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": -3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": [
+                        5
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": [
+                        6
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 7.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": [
+                        7
+                    ]
+                }
+            ],
+            "edges": [
+                {
+                    "a": 0,
+                    "b": 2
+                },
+                {
+                    "a": 1,
+                    "b": 2
+                },
+                {
+                    "a": 2,
+                    "b": 3
+                },
+                {
+                    "a": 2,
+                    "b": 4
+                },
+                {
+                    "a": 3,
+                    "b": 5
+                },
+                {
+                    "a": 4,
+                    "b": 5
+                }
+            ],
+            "groups": [
+                {
+                    "id": 0,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 1,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 2,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 3,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 4,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 5,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 6,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 7,
+                    "color": 1,
+                    "hidden": false
+                }
+            ],
+            "solution": [
+                {
+                    "a": 1,
+                    "b": 3
+                },
+                {
+                    "a": 1,
+                    "b": 0
+                },
+                {
+                    "a": 1,
+                    "b": 3
+                },
+                {
+                    "a": 1,
+                    "b": 0
+                },
+                {
+                    "a": 3,
+                    "b": 1
+                },
+                {
+                    "a": 4,
+                    "b": 0
+                },
+                {
+                    "a": 5,
+                    "b": 1
+                }
+            ]
+        },
+        {
+            "name": "同色共鸣",
+            "tip": "",
+            "nodes": [
+                {
+                    "x": -3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": true,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 0,
+                    "queue": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": true,
+                    "curtain": false,
+                    "targetColor": 1,
+                    "surfaceDirection": 1,
+                    "queue": [
+                        4,
+                        5,
+                        6,
+                        7
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 2.799999952316284,
+                    "z": 2.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": -3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": 3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": []
+                },
+                {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 7.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": []
+                }
+            ],
+            "edges": [
+                {
+                    "a": 0,
+                    "b": 2
+                },
+                {
+                    "a": 1,
+                    "b": 2
+                },
+                {
+                    "a": 2,
+                    "b": 3
+                },
+                {
+                    "a": 2,
+                    "b": 4
+                },
+                {
+                    "a": 3,
+                    "b": 5
+                },
+                {
+                    "a": 4,
+                    "b": 5
+                }
+            ],
+            "groups": [
+                {
+                    "id": 0,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 1,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 2,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 3,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 4,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 5,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 6,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 7,
+                    "color": 0,
+                    "hidden": false
+                }
+            ],
+            "solution": [
+                {
+                    "a": 0,
+                    "b": 3
+                },
+                {
+                    "a": 0,
+                    "b": 4
+                },
+                {
+                    "a": 0,
+                    "b": 3
+                },
+                {
+                    "a": 0,
+                    "b": 4
+                },
+                {
+                    "a": 1,
+                    "b": 4
+                },
+                {
+                    "a": 1,
+                    "b": 0
+                },
+                {
+                    "a": 1,
+                    "b": 4
+                },
+                {
+                    "a": 1,
+                    "b": 0
+                },
+                {
+                    "a": 3,
+                    "b": 0
+                },
+                {
+                    "a": 4,
+                    "b": 1
+                }
+            ]
+        },
+        {
+            "name": "云间回廊",
+            "tip": "",
+            "nodes": [
+                {
+                    "x": -3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": true,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 0,
+                    "queue": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 1,
+                    "queue": [
+                        4,
+                        5,
+                        6,
+                        7
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 2.799999952316284,
+                    "z": 2.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": -3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": 3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": []
+                },
+                {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 7.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": []
+                }
+            ],
+            "edges": [
+                {
+                    "a": 0,
+                    "b": 2
+                },
+                {
+                    "a": 1,
+                    "b": 2
+                },
+                {
+                    "a": 2,
+                    "b": 3
+                },
+                {
+                    "a": 2,
+                    "b": 4
+                },
+                {
+                    "a": 3,
+                    "b": 5
+                },
+                {
+                    "a": 4,
+                    "b": 5
+                }
+            ],
+            "groups": [
+                {
+                    "id": 0,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 1,
+                    "color": 1,
+                    "hidden": true
+                },
+                {
+                    "id": 2,
+                    "color": 0,
+                    "hidden": true
+                },
+                {
+                    "id": 3,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 4,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 5,
+                    "color": 0,
+                    "hidden": true
+                },
+                {
+                    "id": 6,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 7,
+                    "color": 0,
+                    "hidden": true
+                }
+            ],
+            "solution": [
+                {
+                    "a": 0,
+                    "b": 3
+                },
+                {
+                    "a": 0,
+                    "b": 4
+                },
+                {
+                    "a": 0,
+                    "b": 3
+                },
+                {
+                    "a": 0,
+                    "b": 4
+                },
+                {
+                    "a": 1,
+                    "b": 4
+                },
+                {
+                    "a": 1,
+                    "b": 0
+                },
+                {
+                    "a": 1,
+                    "b": 4
+                },
+                {
+                    "a": 1,
+                    "b": 0
+                },
+                {
+                    "a": 3,
+                    "b": 0
+                },
+                {
+                    "a": 4,
+                    "b": 1
+                }
+            ]
+        },
+        {
+            "name": "遗迹合奏",
+            "tip": "",
+            "nodes": [
+                {
+                    "x": -3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 1,
+                    "transit": false,
+                    "sticky": true,
+                    "colorRestricted": true,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 0,
+                    "queue": [
+                        0
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 4.199999809265137,
+                    "z": 0.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": false,
+                    "sticky": false,
+                    "colorRestricted": true,
+                    "curtain": false,
+                    "targetColor": 1,
+                    "surfaceDirection": 1,
+                    "queue": [
+                        1,
+                        2,
+                        3,
+                        4
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 2.799999952316284,
+                    "z": 2.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": []
+                },
+                {
+                    "x": -3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 3,
+                    "queue": [
+                        5
+                    ]
+                },
+                {
+                    "x": 3.5,
+                    "y": 1.399999976158142,
+                    "z": 5.0,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": [
+                        6
+                    ]
+                },
+                {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 7.5,
+                    "capacity": 4,
+                    "unlockAfter": 0,
+                    "transit": true,
+                    "sticky": false,
+                    "colorRestricted": false,
+                    "curtain": false,
+                    "targetColor": 0,
+                    "surfaceDirection": 2,
+                    "queue": [
+                        7
+                    ]
+                }
+            ],
+            "edges": [
+                {
+                    "a": 0,
+                    "b": 2
+                },
+                {
+                    "a": 1,
+                    "b": 2
+                },
+                {
+                    "a": 2,
+                    "b": 3
+                },
+                {
+                    "a": 2,
+                    "b": 4
+                },
+                {
+                    "a": 3,
+                    "b": 5
+                },
+                {
+                    "a": 4,
+                    "b": 5
+                }
+            ],
+            "groups": [
+                {
+                    "id": 0,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 1,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 2,
+                    "color": 0,
+                    "hidden": true
+                },
+                {
+                    "id": 3,
+                    "color": 1,
+                    "hidden": true
+                },
+                {
+                    "id": 4,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 5,
+                    "color": 1,
+                    "hidden": false
+                },
+                {
+                    "id": 6,
+                    "color": 0,
+                    "hidden": false
+                },
+                {
+                    "id": 7,
+                    "color": 1,
+                    "hidden": false
+                }
+            ],
+            "solution": [
+                {
+                    "a": 1,
+                    "b": 3
+                },
+                {
+                    "a": 1,
+                    "b": 4
+                },
+                {
+                    "a": 1,
+                    "b": 3
+                },
+                {
+                    "a": 1,
+                    "b": 4
+                },
+                {
+                    "a": 3,
+                    "b": 1
+                },
+                {
+                    "a": 5,
+                    "b": 1
+                },
+                {
+                    "a": 4,
+                    "b": 0
+                }
+            ]
+        }
+    ]
+}

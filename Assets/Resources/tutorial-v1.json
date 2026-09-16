@@ -1,0 +1,1926 @@
+{
+  "levels": [
+    {
+      "name": "教程 1 · 第一次集合",
+      "tip": "点击红色人群，再点击集结点；同色人群会沿空路一起移动。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            3
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 0,
+          "b": 2
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 2,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 0,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 1,
+          "b": 2
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-01",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-01",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 6,
+        "solutionMoves": 1
+      }
+    },
+    {
+      "name": "教程 2 · 腾出前排",
+      "tip": "先把黄色移到同色中转点，露出后面的红色。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            4,
+            5
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            6,
+            7
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 0,
+          "b": 2
+        },
+        {
+          "a": 0,
+          "b": 3
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 2,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 4,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 5,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 6,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 7,
+          "color": 3,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 1,
+          "b": 3
+        },
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": 3,
+          "b": 1
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-02",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-02",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 15,
+        "solutionMoves": 3
+      }
+    },
+    {
+      "name": "教程 3 · 腾空路口",
+      "tip": "有人站在中转点时不能穿过；先用空平台让出通路。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            0,
+            1
+          ]
+        },
+        {
+          "x": 10.101525,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            2,
+            3
+          ]
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 0,
+          "b": 2
+        },
+        {
+          "a": 2,
+          "b": 3
+        },
+        {
+          "a": 0,
+          "b": 4
+        },
+        {
+          "a": 0,
+          "b": 5
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 2,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 4,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 5,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 6,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 7,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 8,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 9,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 10,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 11,
+          "color": 0,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 2,
+          "b": 1
+        },
+        {
+          "a": 5,
+          "b": 3
+        },
+        {
+          "a": 4,
+          "b": 5
+        },
+        {
+          "a": 1,
+          "b": 4
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-03",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-03",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 171,
+        "solutionMoves": 4
+      }
+    },
+    {
+      "name": "教程 4 · 连续分流",
+      "tip": "利用两个路口分流，先处理挡在前面的同色排。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 10.101525,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            8,
+            9
+          ]
+        },
+        {
+          "x": 10.101525,
+          "z": 7.215375,
+          "y": 1.6,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            10,
+            11
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 0,
+          "b": 2
+        },
+        {
+          "a": 0,
+          "b": 3
+        },
+        {
+          "a": 0,
+          "b": 4
+        },
+        {
+          "a": 4,
+          "b": 5
+        },
+        {
+          "a": 4,
+          "b": 6
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 2,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 4,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 5,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 6,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 7,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 8,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 9,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 10,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 11,
+          "color": 0,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 3,
+          "b": 5
+        },
+        {
+          "a": 6,
+          "b": 3
+        },
+        {
+          "a": 1,
+          "b": 6
+        },
+        {
+          "a": 1,
+          "b": 3
+        },
+        {
+          "a": 1,
+          "b": 6
+        },
+        {
+          "a": 5,
+          "b": 1
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-04",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-04",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 6898,
+        "solutionMoves": 6
+      }
+    },
+    {
+      "name": "教程 5 · 留一个空位",
+      "tip": "中转点只收同色人群；留出一个空位，拆开交错队伍。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 0.0,
+          "z": -7.215375,
+          "y": 6.4,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "x": 10.101525,
+          "z": -7.215375,
+          "y": 6.4,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            4,
+            5,
+            6
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            10,
+            11
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 0,
+          "b": 2
+        },
+        {
+          "a": 2,
+          "b": 3
+        },
+        {
+          "a": 2,
+          "b": 4
+        },
+        {
+          "a": 0,
+          "b": 5
+        },
+        {
+          "a": 0,
+          "b": 6
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 2,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 4,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 5,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 6,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 7,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 8,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 9,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 10,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 11,
+          "color": 0,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 3,
+          "b": 1
+        },
+        {
+          "a": 4,
+          "b": 1
+        },
+        {
+          "a": 4,
+          "b": 3
+        },
+        {
+          "a": 5,
+          "b": 3
+        },
+        {
+          "a": 5,
+          "b": 4
+        },
+        {
+          "a": 1,
+          "b": 5
+        },
+        {
+          "a": 6,
+          "b": 4
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-05",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-05",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 10842,
+        "solutionMoves": 7
+      }
+    },
+    {
+      "name": "教程 6 · 四色调度",
+      "tip": "先整理支路，再合并同色；不要同时占满两个路口。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            0
+          ]
+        },
+        {
+          "x": 0.0,
+          "z": -7.215375,
+          "y": 6.4,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "x": -5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            5,
+            6
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -10.101525,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            10,
+            11,
+            12,
+            13
+          ]
+        },
+        {
+          "x": 0.0,
+          "z": 7.215375,
+          "y": 1.6,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            14,
+            15
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": 0,
+          "b": 3
+        },
+        {
+          "a": 0,
+          "b": 4
+        },
+        {
+          "a": 0,
+          "b": 5
+        },
+        {
+          "a": 5,
+          "b": 6
+        },
+        {
+          "a": 5,
+          "b": 7
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 2,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 4,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 5,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 6,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 7,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 8,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 9,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 10,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 11,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 12,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 13,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 14,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 15,
+          "color": 2,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 4,
+          "b": 3
+        },
+        {
+          "a": 7,
+          "b": 4
+        },
+        {
+          "a": 6,
+          "b": 7
+        },
+        {
+          "a": 1,
+          "b": 6
+        },
+        {
+          "a": 2,
+          "b": 7
+        },
+        {
+          "a": 2,
+          "b": 3
+        },
+        {
+          "a": 2,
+          "b": 4
+        },
+        {
+          "a": 3,
+          "b": 2
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-06",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-06",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 6358,
+        "solutionMoves": 8
+      }
+    },
+    {
+      "name": "教程 7 · 环路绕行",
+      "tip": "一侧路口有人时，可以沿环路另一侧通行。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 0.0,
+          "z": 7.215375,
+          "y": 1.6,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            0
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            1
+          ]
+        },
+        {
+          "x": -5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            6,
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "x": 10.101525,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            10,
+            11,
+            12
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 10.823063,
+          "y": 0.4,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            13,
+            14,
+            15
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": 2,
+          "b": 3
+        },
+        {
+          "a": 3,
+          "b": 0
+        },
+        {
+          "a": 0,
+          "b": 4
+        },
+        {
+          "a": 0,
+          "b": 5
+        },
+        {
+          "a": 3,
+          "b": 6
+        },
+        {
+          "a": 2,
+          "b": 7
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 2,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 4,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 5,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 6,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 7,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 8,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 9,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 10,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 11,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 12,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 13,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 14,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 15,
+          "color": 0,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 4,
+          "b": 1
+        },
+        {
+          "a": 3,
+          "b": 4
+        },
+        {
+          "a": 5,
+          "b": 6
+        },
+        {
+          "a": 5,
+          "b": 2
+        },
+        {
+          "a": 5,
+          "b": 4
+        },
+        {
+          "a": 6,
+          "b": 5
+        },
+        {
+          "a": 6,
+          "b": 2
+        },
+        {
+          "a": 5,
+          "b": 6
+        },
+        {
+          "a": 2,
+          "b": 5
+        },
+        {
+          "a": 7,
+          "b": 1
+        },
+        {
+          "a": 7,
+          "b": 5
+        },
+        {
+          "a": 1,
+          "b": 7
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-07",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-07",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 132677,
+        "solutionMoves": 12
+      }
+    },
+    {
+      "name": "教程 8 · 揭开隐藏色",
+      "tip": "移走最外排，下一排才会揭晓；隐藏排不会提前一起移出。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            6,
+            7
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 0,
+          "b": 2
+        },
+        {
+          "a": 0,
+          "b": 3
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 0,
+          "hidden": true
+        },
+        {
+          "id": 2,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 4,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 5,
+          "color": 0,
+          "hidden": true
+        },
+        {
+          "id": 6,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 7,
+          "color": 2,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": 2,
+          "b": 3
+        },
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": 3,
+          "b": 1
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-08",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-08",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 52,
+        "solutionMoves": 4
+      }
+    },
+    {
+      "name": "教程 9 · 隐藏色分流",
+      "tip": "边揭晓边整理；把空中转点留给刚露出的颜色。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": -3.607688,
+          "y": 5.2,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            4,
+            5
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 10.101525,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            6,
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "x": 10.101525,
+          "z": 7.215375,
+          "y": 1.6,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            10,
+            11
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 0,
+          "b": 2
+        },
+        {
+          "a": 0,
+          "b": 3
+        },
+        {
+          "a": 0,
+          "b": 4
+        },
+        {
+          "a": 4,
+          "b": 5
+        },
+        {
+          "a": 4,
+          "b": 6
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 3,
+          "hidden": true
+        },
+        {
+          "id": 2,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 0,
+          "hidden": true
+        },
+        {
+          "id": 4,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 5,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 6,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 7,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 8,
+          "color": 0,
+          "hidden": true
+        },
+        {
+          "id": 9,
+          "color": 4,
+          "hidden": true
+        },
+        {
+          "id": 10,
+          "color": 4,
+          "hidden": false
+        },
+        {
+          "id": 11,
+          "color": 3,
+          "hidden": true
+        }
+      ],
+      "solution": [
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": 6,
+          "b": 2
+        },
+        {
+          "a": 1,
+          "b": 6
+        },
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": 3,
+          "b": 1
+        },
+        {
+          "a": 5,
+          "b": 6
+        },
+        {
+          "a": 5,
+          "b": 1
+        },
+        {
+          "a": 2,
+          "b": 5
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-09",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-09",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 15466,
+        "solutionMoves": 8
+      }
+    },
+    {
+      "name": "教程 10 · 综合练习",
+      "tip": "利用环路保持通路，再把隐藏颜色逐一归队。",
+      "nodes": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            0,
+            1
+          ]
+        },
+        {
+          "x": -5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": [
+            2
+          ]
+        },
+        {
+          "x": 0.0,
+          "z": 7.215375,
+          "y": 1.6,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 5.050763,
+          "z": 3.607688,
+          "y": 2.8,
+          "capacity": 4,
+          "transit": true,
+          "queue": []
+        },
+        {
+          "x": 10.101525,
+          "z": 0.0,
+          "y": 4.0,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        {
+          "x": 10.101525,
+          "z": 7.215375,
+          "y": 1.6,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "x": -5.050763,
+          "z": 10.823063,
+          "y": 0.4,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            10,
+            11,
+            12
+          ]
+        },
+        {
+          "x": 5.050763,
+          "z": 10.823063,
+          "y": 0.4,
+          "capacity": 4,
+          "transit": false,
+          "queue": [
+            13,
+            14,
+            15
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "a": 0,
+          "b": 1
+        },
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": 2,
+          "b": 3
+        },
+        {
+          "a": 3,
+          "b": 0
+        },
+        {
+          "a": 3,
+          "b": 4
+        },
+        {
+          "a": 3,
+          "b": 5
+        },
+        {
+          "a": 2,
+          "b": 6
+        },
+        {
+          "a": 2,
+          "b": 7
+        }
+      ],
+      "groups": [
+        {
+          "id": 0,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 1,
+          "color": 1,
+          "hidden": false
+        },
+        {
+          "id": 2,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 3,
+          "color": 3,
+          "hidden": false
+        },
+        {
+          "id": 4,
+          "color": 3,
+          "hidden": true
+        },
+        {
+          "id": 5,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 6,
+          "color": 1,
+          "hidden": true
+        },
+        {
+          "id": 7,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 8,
+          "color": 2,
+          "hidden": false
+        },
+        {
+          "id": 9,
+          "color": 3,
+          "hidden": true
+        },
+        {
+          "id": 10,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 11,
+          "color": 1,
+          "hidden": true
+        },
+        {
+          "id": 12,
+          "color": 0,
+          "hidden": true
+        },
+        {
+          "id": 13,
+          "color": 0,
+          "hidden": false
+        },
+        {
+          "id": 14,
+          "color": 3,
+          "hidden": true
+        },
+        {
+          "id": 15,
+          "color": 2,
+          "hidden": false
+        }
+      ],
+      "solution": [
+        {
+          "a": 5,
+          "b": 1
+        },
+        {
+          "a": 4,
+          "b": 5
+        },
+        {
+          "a": 4,
+          "b": 5
+        },
+        {
+          "a": 6,
+          "b": 4
+        },
+        {
+          "a": 6,
+          "b": 0
+        },
+        {
+          "a": 4,
+          "b": 6
+        },
+        {
+          "a": 0,
+          "b": 4
+        },
+        {
+          "a": 7,
+          "b": 6
+        },
+        {
+          "a": 7,
+          "b": 5
+        },
+        {
+          "a": 1,
+          "b": 7
+        }
+      ],
+      "provenance": {
+        "id": "tutorial-v1-10",
+        "generatorVersion": "reference-tutorial-1",
+        "template": "tutorial-10",
+        "difficulty": "tutorial",
+        "solverStatus": "solved",
+        "reviewStatus": "DRAFT",
+        "visited": 159302,
+        "solutionMoves": 10
+      }
+    }
+  ]
+}
