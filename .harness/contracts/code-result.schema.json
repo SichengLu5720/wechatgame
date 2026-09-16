@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/gamedev-harness/code-result.schema.json",
+  "title": "GameDev Harness Code Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "requirement_id",
+    "requirement_version",
+    "build_revision",
+    "mode",
+    "status",
+    "implementation_summary",
+    "changed_files",
+    "commands_run",
+    "acceptance_results",
+    "asset_ids_referenced",
+    "failures_or_unverified",
+    "remaining_risks"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "task_id": { "type": "string", "minLength": 1 },
+    "requirement_id": { "type": "string", "minLength": 1 },
+    "requirement_version": { "type": "integer", "minimum": 1 },
+    "build_revision": { "type": "integer", "minimum": 1 },
+    "contract_digest": { "type": ["string", "null"] },
+    "mode": { "enum": ["parallel_build", "tuning"] },
+    "status": {
+      "enum": ["Code Ready for Integration", "Code Verification Failed", "Needs Replan", "Blocked"]
+    },
+    "implementation_summary": { "type": "string" },
+    "changed_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "baseline": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check" }
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "result", "evidence"],
+        "properties": {
+          "command": { "type": "string" },
+          "result": { "enum": ["Pass", "Fail", "Not Run"] },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "acceptance_results": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/acceptance" }
+    },
+    "asset_ids_referenced": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "plan_deviations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "failures_or_unverified": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "remaining_risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "result", "evidence"],
+      "properties": {
+        "name": { "type": "string" },
+        "result": { "enum": ["Pass", "Fail", "Not Run", "Not Applicable"] },
+        "evidence": { "type": "string" }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criterion_id", "result", "evidence"],
+      "properties": {
+        "criterion_id": { "type": "string" },
+        "result": { "enum": ["Pass", "Fail", "Not Verified", "Not Applicable"] },
+        "evidence": { "type": "string" }
+      }
+    }
+  }
+}

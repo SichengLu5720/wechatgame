@@ -47,3 +47,4 @@ crashlytics-build.properties
 
 # Harness installation source; active files are installed at project root
 /gamedev-harness-v0.1/
+/gamedev-harness-v0.4.zip

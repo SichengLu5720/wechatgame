@@ -168,7 +168,7 @@ Not documented.
 "D:\GameDev\Tools\Unity\6000.0.26f1\Editor\Unity.exe" -batchmode -nographics -projectPath "D:\群岛-harness" -executeMethod WeChatBuild.Export -logFile -
 ```
 
-输出：`Builds/WeChat/minigame`。导出前可在 Unity 菜单中使用 `群岛/微信小游戏/配置并打开转换面板`；AppID、设备验证、上传和发布仍需人工完成并明确授权。
+输出：`Builds/WeChat/minigame`。导出前可在 Unity 菜单中使用 `群岛/微信小游戏/配置并打开转换面板`。Check 已确认后的 Git 推送、微信开发者工具上传和后台设为体验版遵循 `docs/WECHAT_EXPERIENCE_RELEASE_WORKFLOW.md`；AppID、设备验证与上传权限仍只保留在本机和平台账号中。
 
 ---
 
@@ -221,6 +221,13 @@ Not documented.
 - 中文 UI 文案为当前默认。
 - 非法移动应给出原因，不得静默改变棋盘状态。
 - 到达、完成集合、选择与行走反馈由 `InteractionFeedback` 和运行时音频协同处理。
+
+### Requirement Preview Context
+
+- 需求预览统一存放在 `.harness/previews/<task-slug>/`，用于确认玩家可见结果、信息层级和状态关系。
+- 预览是需求参考，不是可直接导入游戏的生产资产，也不能单独新增玩法规则。
+- 任何需要 Builder 遵守的预览细节都必须同时写入对应 Task 的冻结 Product Contract 或 Execution Contract。
+- 已批准预览仍需在实机中通过 Human Check；实际安全区、字体和运行时布局以可玩构建为准。
 
 ### Audio / Haptics
 

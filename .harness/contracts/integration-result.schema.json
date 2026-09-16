@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/gamedev-harness/integration-result.schema.json",
+  "title": "GameDev Harness Integration Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "requirement_id",
+    "requirement_version",
+    "build_revision",
+    "status",
+    "integrated_assets",
+    "changed_files",
+    "commands_run",
+    "acceptance_results",
+    "runtime_captures",
+    "git_diff_review",
+    "failures_or_unverified",
+    "remaining_risks"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "task_id": { "type": "string", "minLength": 1 },
+    "requirement_id": { "type": "string", "minLength": 1 },
+    "requirement_version": { "type": "integer", "minimum": 1 },
+    "build_revision": { "type": "integer", "minimum": 1 },
+    "contract_digest": { "type": ["string", "null"] },
+    "status": { "enum": ["Integrated", "Integration Failed", "Needs Replan", "Blocked"] },
+    "integrated_assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["asset_id", "artifact_path", "bound_to", "result", "evidence"],
+        "properties": {
+          "asset_id": { "type": "string" },
+          "artifact_path": { "type": "string" },
+          "bound_to": { "type": "string" },
+          "result": { "enum": ["Pass", "Fail", "Not Verified", "Not Applicable"] },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "changed_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "result", "evidence"],
+        "properties": {
+          "command": { "type": "string" },
+          "result": { "enum": ["Pass", "Fail", "Not Run"] },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "acceptance_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["criterion_id", "result", "evidence"],
+        "properties": {
+          "criterion_id": { "type": "string" },
+          "result": { "enum": ["Pass", "Fail", "Not Verified", "Not Applicable"] },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "runtime_captures": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "git_diff_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result", "evidence"],
+      "properties": {
+        "result": { "enum": ["Pass", "Fail", "Not Run"] },
+        "evidence": { "type": "string" }
+      }
+    },
+    "failures_or_unverified": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "remaining_risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

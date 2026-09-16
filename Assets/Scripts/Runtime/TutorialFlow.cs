@@ -20,7 +20,7 @@ namespace StairsCrowd.Runtime
             if(!SeamlessTutorial)return false;
             if(!TutorialExiting){
                 // Logical completion happens at click time. Wait for every actor to arrive.
-                if(!board.Solved||motion!=null||IsAssembling)return false;
+                if(FailureLocked||!board.Solved||motion!=null||IsAssembling)return false;
                 tutorialExit=0;tutorialOrigin=scene.root.transform.position;
                 selected=-1;scene.Highlight(board,-1);
                 foreach(var surface in scene.surfaces)surface.enabled=false;

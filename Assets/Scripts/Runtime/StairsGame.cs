@@ -42,33 +42,34 @@ namespace StairsCrowd.Runtime
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-playbacktest")>=0)gameObject.AddComponent<PlaybackVerification>();
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-loadingtest")>=0)gameObject.AddComponent<LoadingVerification>();
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-deliverytest")>=0)gameObject.AddComponent<DeliveryPlayVerification>();
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-failureprogresstest")>=0)gameObject.AddComponent<FailureProgressRuntimeVerification>();
 
             
         }
         public void LoadLevel(int index){DisposeEditorPreview();editing=false;Home=false;if(index<builtInCount)customPlaying=false;LoadBoard(index,true);}
         void LoadBoard(int index,bool animate)
         {
-            CancelPending();ResetProps();levelIndex=Mathf.Clamp(index,0,catalog.levels.Length-1);board=new Board(catalog.levels[levelIndex]);SyncCompletionFeedback();
+            CancelPending();ClearFailureState("level loaded",true);ResetProps();levelIndex=Mathf.Clamp(index,0,catalog.levels.Length-1);board=new Board(catalog.levels[levelIndex]);BeginAttempt();SyncCompletionFeedback();
             var prepared=ConsumePreparedScene(levelIndex);
             if(prepared!=null){if(spaces.Count>=3)spaces.Clear();spaces[levelIndex]=prepared.space;}
             if(!spaces.TryGetValue(levelIndex,out space)||space.Level!=board.Level){if(spaces.Count>=3)spaces.Clear();var nav=Resources.Load<TextAsset>(CampaignRepository.NavigationPath(board.Level,levelIndex));space=new WalkSpace(board.Level,nav?nav.bytes:null,CampaignRepository.GeometryOnly(board.Level));spaces[levelIndex]=space;}
             SetViewport();if(scene==null||scene.space!=space){var previous=scene;scene=prepared??new CrowdScene(space,view);scene.TakePeopleFrom(previous);if(previous!=null)previous.Dispose();}scene.root.SetActive(true);scene.HomeFraming=Home;scene.FitCamera();scene.ClearPeople();selected=-1;chooseLevel=false;message="";scene.Highlight(board,-1);
-            scene.RestoreWorld(board.Current);ConfigureIntro();WarmMoves();if(animate)BeginAssembly();
+            scene.RestoreWorld(board.Current);ConfigureIntro();WarmMoves();if(animate)BeginAssembly();EvaluateCurrentBoard();
         }
         void WarmMoves(){FastMovement.Prepare(space);}
-        public void ReturnHome(){DisposeEditorPreview();editing=false;customPlaying=false;shareOpen=false;libraryOpen=false;Home=true;LoadBoard(0,true);scene.root.SetActive(true);}
-        public void StartGame(){if(!Home)return;editing=false;Home=false;SetViewport();scene.HomeFraming=false;scene.FitCamera();ConfigureIntro();WarmMoves();BeginAssembly();}
+        public void ReturnHome(){DisposeEditorPreview();editing=false;customPlaying=false;shareOpen=false;libraryOpen=false;Home=true;LoadBoard(CampaignProgress.CurrentIndex(builtInCount),true);scene.root.SetActive(true);}
+        public void StartGame(){if(!Home)return;editing=false;Home=false;BeginAttempt();SetViewport();scene.HomeFraming=false;scene.FitCamera();ConfigureIntro();WarmMoves();BeginAssembly();EvaluateCurrentBoard();}
         void BeginAssembly(){if(assembly!=null)assembly.Advance(assembly.Duration);scene.RestoreWorld(board.Current);scene.ClearPeople();assembly=new AssemblySequence(scene);reveal=1;message="";}        void CancelPending(bool settle=true){arrivalTimes.Clear();CancelTutorialExit();CancelPendingMove();CancelViewPointer();DisposeIntroPreview();if(Feedback!=null)Feedback.Cancel();if(settle&&assembly!=null)assembly.Advance(assembly.Duration);assembly=null;reveal=1;motion=null;clock=0;}
-        public void ResetLevel(){if(Home)return;CancelPending();board.Reset();ResetProps();if(space.Level!=board.Level){scene.Dispose();space=new WalkSpace(board.Level);scene=new CrowdScene(space,view);scene.HomeFraming=false;SetViewport();scene.FitCamera();}SyncCompletionFeedback();ConfigureIntro();WarmMoves();BeginAssembly();selected=-1;scene.Highlight(board,-1);message="";}
-        public void Undo(){if(Home||IsAssembling||IntroVisible)return;if(!board.CanUndo)return;board.Undo();RefreshPropWorld();message="";}
+        public void ResetLevel(){if(Home)return;CancelPending();ClearFailureState("level reset",true);board.Reset();BeginAttempt();ResetProps();if(space.Level!=board.Level){scene.Dispose();space=new WalkSpace(board.Level);scene=new CrowdScene(space,view);scene.HomeFraming=false;SetViewport();scene.FitCamera();}SyncCompletionFeedback();ConfigureIntro();WarmMoves();BeginAssembly();selected=-1;scene.Highlight(board,-1);message="";EvaluateCurrentBoard();}
+        public void Undo(){if(Home||IsAssembling||IntroVisible||FailureLocked)return;if(!board.CanUndo)return;board.Undo();RefreshPropWorld();message="";EvaluateCurrentBoard();}
         void Rebuild(){selected=-1;scene.RestoreWorld(board.Current);scene.Populate(board.Current);scene.Highlight(board,-1);for(int n=0;n<board.Level.nodes.Length;n++)if(Rules.Complete(board.Level,board.Current,n))scene.StartRetreat(n);}
         public bool TryMoveSync(int a,int b)
         {
-            if(PropSelection!=0||(scene!=null&&scene.HasAddition)||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing)return false;var move=Rules.Preview(board.Level,board.Current,a,b);if(!move.ok){message=move.reason;return false;}
+            if(FailureLocked||PropSelection!=0||(scene!=null&&scene.HasAddition)||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing)return false;var move=Rules.Preview(board.Level,board.Current,a,b);if(!move.ok){message=move.reason;return false;}
             try{var timer=System.Diagnostics.Stopwatch.StartNew();LastMoveCached=false;var plan=FastMovement.Build(space,board.Current,move);LastPlanningMilliseconds=timer.Elapsed.TotalMilliseconds;Commit(plan);LastMoveMilliseconds=timer.Elapsed.TotalMilliseconds;return true;}
             catch(Exception error){if(CloudVerification.Active)Debug.Log("MOVE DIAGNOSTIC "+error);message="这条路线暂时无法通行，可以继续调整布局";return false;}
         }
-        void Commit(MotionPlan plan){var composition=System.Diagnostics.Stopwatch.StartNew();var combined=MotionComposer.Append(motion,clock,plan);if(combined!=plan)combined.PreparePlayback(space);LastCompositionMilliseconds=composition.Elapsed.TotalMilliseconds;board.TryMove(plan.move.from,plan.move.to,plan.finalSlots);for(int i=0;i<arrivalTimes.Count;i++)arrivalTimes[i]=Mathf.Max(0,arrivalTimes[i]-clock);
+        void Commit(MotionPlan plan){var composition=System.Diagnostics.Stopwatch.StartNew();var combined=MotionComposer.Append(motion,clock,plan);if(combined!=plan)combined.PreparePlayback(space);LastCompositionMilliseconds=composition.Elapsed.TotalMilliseconds;board.TryMove(plan.move.from,plan.move.to,plan.finalSlots);EvaluateCurrentBoard();for(int i=0;i<arrivalTimes.Count;i++)arrivalTimes[i]=Mathf.Max(0,arrivalTimes[i]-clock);
             float arrival=0;foreach(int group in plan.move.ids)for(int member=0;member<Rules.MembersPerGroup;member++){var t=combined.Track(group*Rules.MembersPerGroup+member);if(t!=null)arrival=Mathf.Max(arrival,t.End);}arrivalTimes.Add(arrival);
             motion=combined;WarmMoves();clock=0;selected=-1;PropTarget=-1;message="";scene.Highlight(board,-1);Advance(1f/120);}
         bool CanSelect(int node)
@@ -86,14 +87,14 @@ namespace StairsCrowd.Runtime
         }
         public void ClickPerson(int node)
         {
-            if(InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||board.Solved||node<0||node>=board.Level.nodes.Length)return;if(PropSelection!=0){ChoosePropTarget(node);return;}if(scene.HasAddition)return;RememberPropTarget(node);
+            if(FailureLocked||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||board.Solved||node<0||node>=board.Level.nodes.Length)return;if(PropSelection!=0){ChoosePropTarget(node);return;}if(scene.HasAddition)return;RememberPropTarget(node);
             if(selected==node){selected=-1;message="";scene.Highlight(board,-1);return;}
             if(selected>=0&&SameFrontColor(selected,node)){RequestMove(selected,node);return;}
             if(CanSelect(node))SelectNode(node);
         }
         public void ClickNode(int node)
         {
-            if(InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||board.Solved||node<0||node>=board.Level.nodes.Length)return;if(PropSelection!=0){ChoosePropTarget(node);return;}if(scene.HasAddition)return;RememberPropTarget(node);
+            if(FailureLocked||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||board.Solved||node<0||node>=board.Level.nodes.Length)return;if(PropSelection!=0){ChoosePropTarget(node);return;}if(scene.HasAddition)return;RememberPropTarget(node);
             if(selected==node){selected=-1;message="";scene.Highlight(board,-1);return;}
             if(selected<0){
                 if(CanSelect(node)){SelectNode(node);return;}
@@ -129,7 +130,7 @@ namespace StairsCrowd.Runtime
             if(editing)TickEditorPreview();
             if(board==null)return;
             if(Screen.width!=lastWidth||Screen.height!=lastHeight){SetViewport();if(editing){editorFitRequested=true;editorPreviewDirty=true;}else scene.FitCamera();}
-            if(!HiddenArtVerification.Active&&!TutorialVerification.Active&&!RuntimeVerification.Active&&!CloudVerification.Active&&!SettingsPropsVerification.Active)Advance(Mathf.Min(Time.unscaledDeltaTime,.05f));
+            if(!HiddenArtVerification.Active&&!TutorialVerification.Active&&!RuntimeVerification.Active&&!CloudVerification.Active&&!SettingsPropsVerification.Active&&!FailureProgressRuntimeVerification.Active)Advance(Mathf.Min(Time.unscaledDeltaTime,.05f));
             TickViewInput();
             if(Input.GetKeyDown(KeyCode.Escape)){CancelPropSelection();chooseLevel=false;}
         }
@@ -157,7 +158,7 @@ namespace StairsCrowd.Runtime
             scene.TickWorld(board.Current,delta);
         }
         void SetViewport(){lastWidth=Screen.width;lastHeight=Screen.height;if(editing){SetEditorViewport();return;}view.rect=new Rect(0,0,1,1);}
-        void OnDestroy(){DiscardPreparedScene();DisposeEditorPreview();CancelPending(false);if(scene!=null)scene.Dispose();if(ownsFont&&font)Destroy(font);if(uiCircle)Destroy(uiCircle);if(nightBackdrop)Destroy(nightBackdrop.gameObject);}
+        void OnDestroy(){DiscardPreparedScene();DisposeEditorPreview();CancelPending(false);ClearFailureState("game destroyed",true);if(scene!=null)scene.Dispose();if(ownsFont&&font)Destroy(font);if(uiCircle)Destroy(uiCircle);if(nightBackdrop)Destroy(nightBackdrop.gameObject);}
         GUIStyle Style(int size,FontStyle weight=FontStyle.Normal,TextAnchor anchor=TextAnchor.MiddleLeft)
         {return new GUIStyle{font=font,fontSize=size,fontStyle=weight,alignment=anchor,normal={textColor=new Color(.26f,.32f,.36f)},wordWrap=true};}
         void InitStyles(){if(title!=null)return;title=Style(31,FontStyle.Bold);body=Style(17);small=Style(13);button=Style(17,FontStyle.Bold,TextAnchor.MiddleCenter);}

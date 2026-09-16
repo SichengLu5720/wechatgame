@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/gamedev-harness/build-dispatch-packet.schema.json",
+  "title": "GameDev Harness Build Dispatch Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "task_path",
+    "requirement_id",
+    "requirement_version",
+    "build_revision",
+    "build_mode",
+    "status",
+    "workstreams",
+    "asset_contract",
+    "interface_contract"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requirement_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requirement_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "build_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "contract_digest": {
+      "type": ["string", "null"]
+    },
+    "build_mode": {
+      "enum": ["Code Only", "Art Only", "Parallel Code + Art"]
+    },
+    "status": {
+      "const": "ready"
+    },
+    "preview_artifact": {
+      "type": ["string", "null"]
+    },
+    "art_bible_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "reference_assets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "workstreams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "art", "integration"],
+      "properties": {
+        "code": { "$ref": "#/$defs/workstream" },
+        "art": { "$ref": "#/$defs/workstream" },
+        "integration": { "$ref": "#/$defs/workstream" }
+      }
+    },
+    "asset_contract": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/assetContractItem" }
+    },
+    "interface_contract": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/interfaceItem" }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 },
+          "owner": {
+            "enum": ["code", "art", "integration", "human", "shared"]
+          }
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "technical": { "enum": ["Self Check", "Fresh Review"] },
+        "art": { "enum": ["Not Required", "Asset QA", "Human Art Approval"] },
+        "experience": { "enum": ["None", "Human Check"] }
+      }
+    }
+  },
+  "$defs": {
+    "workstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "allowed_write_paths", "forbidden_write_paths", "result_path"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "allowed_write_paths": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "forbidden_write_paths": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "result_path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "assetContractItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "purpose",
+        "final_path",
+        "asset_type",
+        "format",
+        "required"
+      ],
+      "properties": {
+        "asset_id": { "type": "string", "minLength": 1 },
+        "purpose": { "type": "string", "minLength": 1 },
+        "final_path": { "type": "string", "minLength": 1 },
+        "source_path": { "type": ["string", "null"] },
+        "asset_type": { "type": "string", "minLength": 1 },
+        "width": { "type": ["integer", "null"], "minimum": 1 },
+        "height": { "type": ["integer", "null"], "minimum": 1 },
+        "aspect_ratio": { "type": ["string", "null"] },
+        "format": { "type": "string", "minLength": 1 },
+        "alpha_required": { "type": ["boolean", "null"] },
+        "background": { "type": ["string", "null"] },
+        "frame_count": { "type": ["integer", "null"], "minimum": 1 },
+        "frame_grid": { "type": ["string", "null"] },
+        "style_constraints": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "must_not_contain": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "import_expectations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "required": { "type": "boolean" }
+      }
+    },
+    "interfaceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "runtime_role",
+        "consumer",
+        "binding_slot",
+        "expected_path",
+        "binding_owner",
+        "blocks_integration"
+      ],
+      "properties": {
+        "asset_id": { "type": "string", "minLength": 1 },
+        "runtime_role": { "type": "string", "minLength": 1 },
+        "consumer": { "type": "string", "minLength": 1 },
+        "binding_slot": { "type": "string", "minLength": 1 },
+        "expected_path": { "type": "string", "minLength": 1 },
+        "fallback": { "type": ["string", "null"] },
+        "binding_owner": { "const": "code_builder" },
+        "blocks_integration": { "type": "boolean" }
+      }
+    }
+  }
+}

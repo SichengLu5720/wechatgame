@@ -30,6 +30,7 @@ public static class UnityBuild
                 if(!board.Solved)throw new Exception("Unsolved level");board.Reset();if(board.Moves!=0||board.CanUndo)throw new Exception("Reset failed");
             }
             TutorialVerification.CheckDefinitions("artifacts/tutorial-definitions.json");
+            FailureProgressVerification.Run();
             Directory.CreateDirectory("artifacts");File.WriteAllText("artifacts/verification.json","{\"passed\":true,\"levels\":"+catalog.levels.Length+",\"moves\":"+moves+",\"surfaceSamples\":"+samples+",\"actorOverlapAllowed\":true,\"minimumCenterDistance\":"+min.ToString(System.Globalization.CultureInfo.InvariantCulture)+"}");
             Debug.Log("VERIFICATION PASSED");if(buildAfterVerify)Build();else EditorApplication.Exit(0);
         }catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}

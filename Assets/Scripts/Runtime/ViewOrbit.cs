@@ -36,7 +36,7 @@ namespace StairsCrowd.Runtime
         public bool PressPreviewActive => viewPointerPreview;
         public bool ViewPointerDragged {get{return viewPointerDragged;}}
         public void CancelViewPointer(){if(viewPointerPreview&&scene!=null&&board!=null)scene.Highlight(board,selected);viewPointerPreview=false;viewPointerActive=false;viewPointerDragged=false;viewFinger=-1;}
-        bool CanUseView(){return !InterfaceBlocksInput&&board!=null&&!editing&&!IntroVisible&&!chooseLevel&&!shareOpen&&!libraryOpen&&!(board.Solved&&!Busy&&!Home);}
+        bool CanUseView(){return !FailureLocked&&!InterfaceBlocksInput&&board!=null&&!editing&&!IntroVisible&&!chooseLevel&&!shareOpen&&!libraryOpen&&!(board.Solved&&!Busy&&!Home);}
         bool ViewArea(Vector2 point){return view.pixelRect.Contains(point)&&(Home?(point.y>Screen.height*.26f&&point.y<Screen.height*.77f):(point.y>Screen.height*.19f&&point.y<Screen.height*.87f));}
         public void BeginViewPointer(Vector2 point)
         {

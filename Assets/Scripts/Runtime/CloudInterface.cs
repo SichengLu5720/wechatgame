@@ -60,13 +60,14 @@ namespace StairsCrowd.Runtime
             if(Home){
                 DrawHomeEditorButton(scale);SettingsGear(w,Mathf.Max(64,(Screen.height-Screen.safeArea.yMax)/scale+12));
                 if(startHero){float heroW=Mathf.Min(w-56,320),heroH=heroW*startHero.height/startHero.width,maxH=h*.18f;if(heroH>maxH){heroH=maxH;heroW=heroH*startHero.width/startHero.height;}GUI.DrawTexture(new Rect((w-heroW)/2,h*.025f,heroW,heroH),startHero,ScaleMode.ScaleToFit,true);}
-                if(Button(new Rect(w/2-110,h*.82f,220,52),"开始",true,new Color(.68f,.78f,.69f)))StartGame();
+                if(Button(new Rect(w/2-110,h*.82f,220,52),"继续第 "+(levelIndex+1)+" 关",true,new Color(.68f,.78f,.69f)))StartGame();
                 GUI.matrix=Matrix4x4.identity;return;
             }
             DrawPropHUD(w,h);
             DrawTutorialHint(w,h);
             if(board.Solved&&!Busy&&!IntroVisible&&!SeamlessTutorial){Fill(new Rect(w/2-200,h*.36f,400,180),new Color(.96f,.93f,.85f));GUI.Label(new Rect(w/2-170,h*.36f+20,340,45),"集合完成",title);GUI.Label(new Rect(w/2-170,h*.36f+68,340,30),"用了 "+board.Moves+" 步",body);
-                if(Button(new Rect(w/2-170,h*.36f+117,340,44),customPlaying?"返回编辑":"下一关",true,new Color(.68f,.8f,.7f))){if(customPlaying)OpenEditor();else LoadLevel((levelIndex+1)%builtInCount);}}
+                string action=customPlaying?"返回编辑":levelIndex+1<builtInCount?"下一关":"再次挑战";if(Button(new Rect(w/2-170,h*.36f+117,340,44),action,true,new Color(.68f,.8f,.7f))){if(customPlaying)OpenEditor();else LoadLevel(Mathf.Min(levelIndex+1,builtInCount-1));}}
+            DrawFailurePanel(w,h);
             if(IntroVisible){
                 int kind=introKinds[introPage];PrepareIntroPreview(kind);Fill(new Rect(0,0,w,h),new Color(.12f,.19f,.22f,.70f));
                 float panelW=Mathf.Min(w-44,480),left=(w-panelW)/2,top=h*.15f,panelH=Mathf.Min(h*.7f,650);Fill(new Rect(left,top,panelW,panelH),new Color(.96f,.93f,.86f));

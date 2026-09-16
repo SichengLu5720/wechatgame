@@ -1,81 +1,403 @@
 # GameDev Harness
 
-This repository uses a lightweight game-development harness built around two project-scoped Codex agents:
+This repository uses a lightweight game-development harness with one user-facing PM in the main thread and five bounded subagent roles:
 
-- `feature_designer`: turns an idea, feedback item, tuning request, or non-trivial bug into one executable Task.
-- `feature_builder`: implements one approved Task and verifies it against frozen acceptance criteria.
+- **PM Orchestrator (main thread):** clarifies the user's requirement, creates the confirmed Requirement Packet, dispatches parallel work, reconciles results, and is the only writer of the final Task contract and combined build result.
+- `feature_designer` (read-only): maps the confirmed requirement to the real project and defines the implementation and asset-production contract.
+- `requirement_visualizer` (isolated write scope): creates a requirement preview from the same confirmed packet.
+- `code_builder` (write scope): implements code, scenes, configuration, tests, and final engine integration.
+- `art_asset_builder` (separate write scope): produces final art assets and their manifest from the approved visual direction and frozen production-art contract.
+- `fresh_reviewer` (read-only): independently checks the completed change against the frozen contracts and evidence, focusing on clear correctness and regression risks.
 
-The harness optimizes for agent autonomy while preserving product intent, traceability, rollback safety, and human control over subjective experience and external release actions.
+## Runtime Model Policy
+
+- PM Orchestrator (main thread): `gpt-5.6-sol`, reasoning `medium`. Select this when starting the PM session; project files cannot force the already-running main-thread model.
+- `feature_designer`: `gpt-6-astra`, reasoning `high`.
+- `requirement_visualizer`: `gpt-5.6-luna`, reasoning `medium`.
+- `code_builder`: `gpt-6-astra`, reasoning `high`.
+- `art_asset_builder`: `gpt-5.6-terra`, reasoning `medium`.
+- `fresh_reviewer`: `gpt-6-astra`, reasoning `low`.
+
+Use the highest-cost configuration only where a wrong design or implementation would create expensive rework. Do not silently raise these defaults.
+
+The PM remains in the main thread because product clarification requires direct dialogue with the user. Designer and Visualizer run in parallel during design. Code Builder and Art Asset Builder may run in parallel during production only after their ownership boundaries and shared interface contract are frozen.
 
 ## Sources of Truth
 
-Use only these persistent sources:
+Use these persistent sources:
 
-- `docs/GAME_SPEC.md`: stable game rules, project facts, architecture map, and known build/run commands.
-- `tasks/*.md`: one feature or defect from design through implementation and verification.
+- `docs/GAME_SPEC.md`: stable game rules, project facts, architecture map, and real build/run commands.
+- `docs/ART_BIBLE.md`: stable visual language and asset-production conventions.
+- `tasks/*.md`: one finalized feature or defect from product contract through implementation and verification.
 - `versions/*.md`: integration, regression, release-candidate, release, and observation state for one version.
-- Git history: actual code history and rollback boundaries.
+- Git history: actual implementation history and rollback boundaries.
 
-Do not create separate PRDs, technical plans, implementation reports, QA reports, or release reports when the same information belongs in the active Task or Version file.
+Requirement previews live under `.harness/previews/`. Recoverable intermediate build packets may live under `.harness/runs/`. Neither replaces the active Task as the permanent source of truth.
 
-Chat history may provide intent, but it is not the only source of truth for persistent project state.
+Do not create separate PRDs, technical plans, art briefs, implementation reports, QA reports, or release reports when the information belongs in the active Task or Version file.
 
-## Working Principle
+# PM Orchestrator
 
-Use the minimum process needed for the risk of the change.
+For any new feature, ambiguous bug, gameplay change, player-facing tuning request, UI change, art direction, or cross-system request, the main agent first acts as PM.
 
-- Low-risk, explicit changes may be implemented directly.
-- Ambiguous, cross-system, player-facing, or repeatedly reworked changes should first become a Task through `feature_designer`.
-- Each Task should have one writer during implementation.
-- Internal implementation details may change; frozen player-facing outcomes may not.
+The PM owns all user-facing requirement dialogue and all product decisions. Downstream agents must not independently renegotiate scope with the user.
 
-## Feature Design Routing
+## PM Required Steps
 
-Use `feature_designer` before implementation when any of the following applies:
+### 1. Gather relevant context
 
-- a new feature or gameplay mechanic
-- a change to player behavior, controls, rules, state flow, win/loss, progression, or economy
-- a tuning request whose real cause or implementation location is unclear
-- a change spanning multiple systems, scenes, resources, or files
-- a bug whose reproduction, expected behavior, or ownership is unclear
-- a request that has already caused rework or regression
-- a feature requiring subjective experience goals or explicit acceptance criteria
+Read only the parts relevant to the request:
 
-The following may skip Designer when they are explicit, low-risk, and reversible:
+- the user's complete request and references
+- `docs/GAME_SPEC.md`
+- `docs/ART_BIBLE.md` when visual production is involved
+- related active Tasks and confirmed decisions
+- screenshots, sketches, previews, or assets supplied by the user
 
-- a text replacement
-- a known configuration-value change
-- a simple color or asset swap with no behavior change
-- a localized bug with a confirmed cause and expected result
-- comments, formatting, or documentation-only edits
+Do not scan the entire codebase before basic product clarification. Technical investigation belongs to Designer after confirmation.
 
-Designer must create or reuse exactly one `tasks/<task-slug>.md` file and return either:
+### 2. Clarify the product requirement
 
-- `Ready to Build`
-- `Needs Decision`
+Resolve only questions that materially affect:
 
-If Designer returns `Needs Decision`, do not begin implementation until the blocking product decision is resolved.
+- player-facing outcome
+- gameplay or interaction rules
+- scope and non-goals
+- data or save compatibility
+- visual direction
+- required production assets
+- acceptance criteria
 
-## Feature Build Routing
+Low-risk, reversible details may be recorded as explicit assumptions instead of becoming repeated questions.
 
-Use `feature_builder` only for a Task whose status is `Ready to Build`.
+### 3. Present a Requirement Confirmation
 
-Provide one Task at a time. The Task is the primary requirement source.
+Before dispatch, present a concise confirmation containing:
 
-Builder must:
+- Problem
+- Player Outcome
+- Core Rules
+- Scope
+- Non-goals
+- Constraints
+- Accepted Assumptions
+- Visual Preview Purpose
+- Acceptance Intent
+- Remaining Decisions
 
-1. inspect the actual implementation and establish a pre-change baseline
-2. implement the smallest complete change that satisfies the Task
-3. run the real checks available in the project
-4. assess every frozen acceptance criterion with evidence
-5. inspect the final Git diff for unrelated changes
-6. update only the Task status and its Builder Result area
+Simple, reversible requests may be treated as implicitly confirmed when intent is unambiguous. Core gameplay, interaction, economy, save compatibility, or major visual direction requires explicit confirmation.
 
-Builder may adjust the internal implementation plan when the real code differs from the Designer's map, but it must record material deviations.
+### 4. Create one confirmed Requirement Packet
 
-Builder must not create duplicate implementation or QA documents.
+Create one machine-readable packet conforming to:
 
-## Frozen Requirements
+`.harness/contracts/requirement-packet.schema.json`
+
+It must include:
+
+- `status: confirmed`
+- an empty `open_questions` array
+- stable requirement and task identifiers
+- an incrementing requirement version
+- the user's verbatim request
+- confirmed outcomes, scope, boundaries, and assumptions
+- acceptance intent
+- a visual brief
+
+The exact same packet is sent to Designer and Visualizer.
+
+### 5. Dispatch Designer and Visualizer in parallel
+
+Spawn both subagents with the same Requirement Packet and wait for both.
+
+Write scopes must remain disjoint:
+
+- `feature_designer`: read-only; returns one Design Packet and writes no files.
+- `requirement_visualizer`: writes only `.harness/previews/<task-slug>/` and returns one Preview Manifest.
+
+Designer must not create the Task. Visualizer must not infer technical implementation.
+
+### 6. Reconcile design outputs
+
+Check that:
+
+- both outputs reference the same requirement ID and version
+- neither changes the confirmed product contract
+- Designer's plan satisfies the player outcome
+- Visualizer shows required elements and does not imply excluded ones
+- visual and technical assumptions are explicit
+- proposed acceptance criteria are observable
+- the proposed build mode and workstream ownership are safe
+
+If a downstream output merely violates the packet, ask that subagent to revise it. If a real product decision appears, return to the user, increment the Requirement Packet version, and rerun affected downstream work.
+
+### 7. Handle preview approval
+
+Preview Gate values:
+
+- `None`
+- `Reference`
+- `Approval Required`
+
+A preview is not a hidden specification. Any detail that production agents must obey must also be written into the frozen Product Contract or Parallel Build Contract.
+
+### 8. Write the single final Task
+
+Only the PM writes `tasks/<task-slug>.md`.
+
+The PM combines:
+
+- confirmed Requirement Packet
+- Designer's Design Packet
+- Visualizer's Preview Manifest and approved artifact
+- user preview decision when required
+
+into one Task using `tasks/_TEMPLATE.md`.
+
+The Task must define:
+
+- frozen Product Contract
+- Build Mode
+- workstream ownership
+- Code Contract
+- Production Art Contract
+- Code-Art Interface Contract
+- acceptance and verification gates
+
+Normal result: `Ready to Build`.
+
+If a product or production contract is still unresolved: `Needs Decision`.
+
+## PM Prohibited Actions
+
+1. Do not dispatch contradictory or unconfirmed requirements.
+2. Do not send different requirement versions to Designer and Visualizer.
+3. Do not hide assumptions inside technical or visual output.
+4. Do not let implementation convenience redefine the user's objective.
+5. Do not create multiple permanent requirement documents for one Task.
+6. Do not start production before the Task is `Ready to Build`.
+7. Do not treat a requirement preview as final production art.
+8. Do not let Code Builder and Art Asset Builder write the same file or directory concurrently.
+
+# Design Roles
+
+## Feature Designer
+
+Use `feature_designer` only after PM has produced a confirmed Requirement Packet.
+
+Designer owns:
+
+- real project investigation
+- implementation design
+- affected-system mapping
+- asset-pipeline investigation
+- production-asset requirements
+- code-art interface definition
+- compatibility and regression analysis
+- acceptance criteria and verification plans
+- Build Mode and gate recommendations
+
+Designer does not own user dialogue, preview generation, Task writing, code implementation, or asset production.
+
+Designer result:
+
+- `Design Ready`
+- `Needs PM Decision`
+- `Blocked`
+
+## Requirement Visualizer
+
+Dispatch `requirement_visualizer` alongside Designer with the same packet.
+
+Visualizer owns:
+
+- one requirement-preview artifact when useful
+- one `preview-manifest.json`
+- explicit visual assumptions and divergence warnings
+
+Visualizer writes only:
+
+`.harness/previews/<task-slug>/`
+
+Visualizer result:
+
+- `Generated`
+- `Preview Not Required`
+- `Blocked`
+
+# Parallel Production Contract
+
+A Task may use one of three Build Modes:
+
+- `Code Only`
+- `Art Only`
+- `Parallel Code + Art`
+
+Parallel production is allowed only when the Task contains a complete `Parallel Build Contract` and the two write scopes are disjoint.
+
+The Parallel Build Contract must identify:
+
+- build revision or task digest
+- code-owned paths
+- art-owned paths
+- forbidden paths for each workstream
+- required asset IDs and exact final paths
+- dimensions, formats, transparency, framing, frame layout, and import expectations when relevant
+- code slots, scene bindings, or runtime roles for each asset
+- placeholder policy
+- integration owner and order
+- technical and human gates
+
+Builders may alter internal implementation within their ownership area, but neither may change the shared interface contract. If the contract is incomplete or unsafe, return `Needs Replan` before writing.
+
+# Parallel Build Routing
+
+For `Parallel Code + Art`, the PM or main agent performs this sequence:
+
+```text
+final Task + fixed build revision
+        ↓
+spawn code_builder and art_asset_builder in parallel
+        ↓
+wait for both result packets
+        ↓
+contract and ownership reconciliation
+        ↓
+code_builder integration pass
+        ↓
+in-game capture / runtime verification
+        ↓
+art visual QA and human gate when required
+        ↓
+PM writes one combined result into the Task
+```
+
+Both builders receive the same finalized Task path, build revision, and contract digest. The dispatch packet should conform to `.harness/contracts/build-dispatch-packet.schema.json`.
+
+They must not edit the Task while running in parallel. Each returns a structured result to the PM and may store recoverable machine state only in its assigned `.harness/runs/<task-slug>/...` directory.
+
+## Code Builder Ownership
+
+`code_builder` owns only the paths assigned to the code workstream, normally including:
+
+- source code
+- scenes, prefabs, nodes, and resource bindings
+- configuration
+- tests
+- build and runtime verification
+- engine import settings and generated asset references during the integration pass
+
+Code Builder must not generate or modify final production art unless the Task explicitly assigns a deterministic code-produced asset such as an SVG or procedural texture to the code workstream.
+
+During the initial parallel pass, Code Builder may use only the placeholder policy defined in the Task. It must bind against stable asset IDs and paths rather than inventing its own asset names.
+
+Code Builder result should conform to `.harness/contracts/code-result.schema.json`.
+
+Code Builder result:
+
+- `Code Ready for Integration`
+- `Code Verification Failed`
+- `Needs Replan`
+- `Blocked`
+
+## Art Asset Builder Ownership
+
+`art_asset_builder` owns only the production-art paths assigned in the Task and its own machine result directory.
+
+It owns:
+
+- final 2D art assets that available tools can reliably produce
+- source/export variants when required
+- asset family consistency
+- exact technical asset specifications
+- `asset-manifest.json`
+- visual self-QA against the approved preview and Art Bible
+
+It must not modify:
+
+- code
+- scenes or prefabs
+- engine import metadata
+- runtime configuration
+- tests
+- Task or Version files
+
+Art Asset Builder writes an Asset Manifest conforming to `.harness/contracts/asset-manifest.schema.json`.
+
+Art Asset Builder result:
+
+- `Art Ready`
+- `Art QA Failed`
+- `Needs PM Decision`
+- `Blocked`
+
+For 3D models, rigging, skeletal animation, production typography, or other assets that the available toolchain cannot reliably deliver, Art Asset Builder must return `Blocked` or a clearly scoped partial result instead of claiming a production-ready asset.
+
+# Integration Pass
+
+After both parallel workstreams return, the PM verifies:
+
+- matching Task ID, requirement version, build revision, and contract digest
+- no overlapping writes
+- every required asset ID exists in the Art Manifest
+- all required technical asset checks pass
+- Code Builder did not invent uncontracted asset names
+- Art Asset Builder did not add uncontracted gameplay or UI
+
+Then `code_builder` performs a sequential integration pass as the sole writer of code, scenes, engine metadata, import settings, and bindings.
+
+The integration pass must:
+
+1. import or detect the final assets
+2. bind every asset ID to the defined code or scene slot
+3. run build and relevant tests
+4. run the target scene or flow when possible
+5. capture logs and, when useful, in-game screenshots
+6. assess all frozen acceptance criteria
+7. inspect the final Git diff
+8. return one Integration Result conforming to `.harness/contracts/integration-result.schema.json`
+
+If Art Asset Builder revises an asset after in-game visual QA, Code Builder must rerun the affected integration checks. Do not assume a same-path replacement is safe without verification.
+
+# Art and Visual Quality Gates
+
+A Task may define:
+
+- `Art Gate: Not Required`
+- `Art Gate: Asset QA`
+- `Art Gate: Human Art Approval`
+
+`Asset QA` checks observable production requirements such as:
+
+- correct file path and name
+- dimensions and aspect ratio
+- format and alpha behavior
+- frame count and sprite-sheet grid
+- padding, safe areas, pivots, or slicing requirements
+- palette and style-family consistency
+- absence of unintended text, logos, or elements
+- manifest completeness
+
+`Human Art Approval` is required when final visual quality, appeal, readability, style consistency, or character identity is a material part of acceptance.
+
+Requirement Preview approval does not replace final production-art approval.
+
+# Combined Result and Task Writing
+
+Neither parallel builder writes the Task.
+
+After code production, art production, integration, and required gates finish, the PM writes one combined result into the existing Task:
+
+- Code Build Result
+- Art Build Result
+- Integration Result
+- Acceptance Results
+- verification evidence
+- remaining risks
+
+This preserves one permanent Task source of truth while allowing both production agents to work independently.
+
+# Frozen Contracts
 
 The area between:
 
@@ -85,102 +407,115 @@ The area between:
 <!-- FROZEN_END -->
 ```
 
-is controlled by Designer and the user.
+is the Product Contract controlled by the PM and user.
 
-Builder must not delete, weaken, reinterpret, or modify this area.
-
-If the frozen requirements are contradictory, unsafe, impossible with the real project, or require a material product change, Builder returns `Needs Replan` instead of editing them.
-
-A claimed acceptance `Pass` must include concrete evidence. An unexecuted or uncertain check is `Not Verified`, not `Pass`.
-
-## Task States
-
-Normal flow:
+The area between:
 
 ```text
-Needs Decision
-→ Ready to Build
-→ Ready for Review / Ready for Human Check / Verified
+<!-- EXECUTION_CONTRACT_START -->
+...
+<!-- EXECUTION_CONTRACT_END -->
 ```
 
-Exceptional states:
+is the production interface contract controlled by the PM before dispatch.
 
-- `Verification Failed`: implementation exists but required acceptance failed.
-- `Needs Replan`: product result, scope, or acceptance criteria require redesign.
-- `Blocked`: an environment, permission, asset, dependency, or external condition prevents progress.
+Builders must not modify either area.
 
-Do not use `Done`, `Closed`, or `Approved` as substitutes for these states.
+If either contract is contradictory, incomplete, unsafe, or requires a material product change, return `Needs Replan` instead of editing it.
 
-## Verification Gates
+# Verification Gates
 
-Each Task defines two independent gates:
+Each Task may define:
 
 - `Technical Gate`: `Self Check` or `Fresh Review`
+- `Art Gate`: `Not Required`, `Asset QA`, or `Human Art Approval`
 - `Experience Gate`: `None` or `Human Check`
 
-### Self Check
+A Task becomes `Verified` only when every required gate passes.
 
-Builder may return `Verified` only when all required technical criteria pass, the Task uses `Self Check`, no subjective experience decision remains, and there are no unexplained failures or unrelated changes.
+A claimed `Pass` must include concrete evidence. Unexecuted or uncertain checks are `Not Verified`.
 
-### Fresh Review
+## Fresh Review
 
-When `Technical Gate` is `Fresh Review`, Builder stops at `Ready for Review`.
+When Technical Gate is `Fresh Review`, use the project-scoped `fresh_reviewer` as an independent read-only review focused on:
 
-Use an independent read-only review, including Codex `/review` when available. Review only:
-
-- the Task frozen requirements
-- Builder Result
-- the relevant Git diff
-- changed files and directly affected call paths
-
-Prioritize:
-
-- correctness defects
-- acceptance-criteria violations
-- player-visible behavior outside scope
-- state and lifecycle errors
-- scene, prefab, node, serialized-field, resource, and configuration-reference risks
-- data or save compatibility risks
+- frozen contract violations
+- behavior outside scope
+- state, lifecycle, and integration defects
+- scene/resource/configuration risks
 - unsupported verification claims
-- meaningful regressions
+- missing regression coverage
 
-Do not block on style-only preferences or unrelated refactoring suggestions.
-
-Review result must be one of:
+Result:
 
 - `Review Passed`
 - `Changes Required`
 - `Inconclusive`
 
-### Human Check
+## Human Check
 
-When `Experience Gate` is `Human Check`, technical success is not final acceptance.
+Human results:
 
-Builder must provide a short, reproducible playtest checklist for the user.
+- `Accepted`
+- `Needs Tuning`
+- `Needs Redesign`
 
-Human result:
+`Needs Tuning` returns to the relevant builder without changing frozen requirements. `Needs Redesign` returns to PM, increments the Requirement Packet version, and reruns affected design or production work.
 
-- `Accepted`: Task may become `Verified` after all technical gates pass.
-- `Needs Tuning`: return to Builder without changing frozen requirements.
-- `Needs Redesign`: return to Designer because the desired result or interaction must change.
+# Write Ownership
 
-Subjective judgments such as feel, readability, fun, pacing, animation naturalness, vibration strength, audiovisual cohesion, and difficulty require human acceptance unless the user explicitly waives it.
+Parallel write work is permitted only across disjoint paths.
 
-## Single-Writer Rule
+During design:
 
-Only one write-capable agent should modify the working tree for the active Task at a time.
+- PM owns the final Task.
+- Designer is read-only.
+- Visualizer writes only the preview directory.
 
-Designer may write only the Task file it creates or updates.
+During parallel production:
 
-Builder may write project implementation files plus the active Task's Builder Result and status.
+- Code Builder writes only code-owned paths and its machine result directory.
+- Art Asset Builder writes only art-owned paths and its machine result directory.
+- Neither edits the Task.
+- Neither edits the other workstream's files.
 
-Reviewers should remain read-only.
+During integration:
 
-Do not allow concurrent agents to edit the same code, scene, asset, configuration, Task, or Version file.
+- Code Builder is the sole writer of engine scenes, metadata, import settings, bindings, and tests.
+- Art Asset Builder is read-only outside its art-owned paths.
+- Reviewers remain read-only.
 
-## Version Lifecycle
+Do not allow concurrent edits to the same file, scene, asset, metadata file, Task, Version, or manifest.
 
-A Version is the integration and delivery unit above individual Tasks. Maintain one file:
+# Task States
+
+Normal flow:
+
+```text
+PM Intake
+→ Clarifying
+→ Awaiting Confirmation
+→ Design Dispatched
+→ Preview Approval, if required
+→ Ready to Build
+→ Building in Parallel, when applicable
+→ Ready for Integration
+→ Ready for Review / Ready for Human Check / Verified
+```
+
+Exceptional states:
+
+- `Needs Decision`
+- `Build Failed`
+- `Verification Failed`
+- `Needs Replan`
+- `Blocked`
+
+Do not use `Done`, `Closed`, or `Approved` as substitutes.
+
+# Version Lifecycle
+
+Maintain one file per version:
 
 `versions/<version>.md`
 
@@ -195,85 +530,18 @@ Planning
 → Released
 ```
 
-Exceptional states:
+All Included Tasks must be `Verified` before a Release Candidate is created.
 
-- `Changes Required`
-- `Blocked`
-- `Rejected`
-- `Rolled Back`
+Version integration must check code-art bindings, required production assets, scene/resource references, shared state, input conflicts, configuration overrides, save compatibility, build configuration, debug-only content, and the complete core flow.
 
-A Release Candidate may contain only Included Tasks whose final status is `Verified`.
+Platform-specific release procedures may remain empty until a target platform is selected. External upload, submission, publication, rollout, remote push, and production rollback require explicit user authorization.
 
-At version integration:
+For this project's WeChat experience-channel releases, use `docs/WECHAT_EXPERIENCE_RELEASE_WORKFLOW.md` after all required Checks are accepted and the Version Release Decision is `Approved`. The workflow orders: approved Checks → scoped Git commit and push → WeChat export → developer-tool upload → platform-console experience-version activation. Stop at any failed gate or external action; never store AppID, upload keys, tokens, or credentials in the repository.
 
-1. record branch, base commit, working-tree state, and previous stable point
-2. confirm the change boundary for each Included Task
-3. verify cross-Task interactions rather than repeating every Task test
-4. run a repeatable core-flow smoke test appropriate to the project's maturity
-5. check production configuration, scenes/resources, and absence of unintended debug/test content
-6. create an immutable Release Candidate tied to an exact commit and artifact
-7. complete required technical and human release gates
-8. record release, observation, hotfix, or rollback outcomes in the same Version file
+# Git and Safety
 
-Any code, scene, asset, dependency, configuration, or build-setting change invalidates the current Release Candidate and requires a new one.
-
-Do not silently change frozen Version scope after Integration begins. Record the scope change and rerun affected checks.
-
-## Platform Release Procedures
-
-Platform-specific release steps may remain blank until a target platform is selected.
-
-At first integration of a platform:
-
-- research the current official platform documentation
-- record the verification date and relevant SDK/toolchain versions
-- route SDK, code, build, or configuration adaptation through a normal Task
-- record the reusable platform release procedure only after it has been validated with a real test or release build
-
-Do not guess current platform requirements from memory.
-
-External account creation, legal acceptance, credential changes, production signing, upload, submission, rollout, publication, and production rollback require explicit user authorization.
-
-Never store secrets, tokens, private keys, signing credentials, or certificates in source files, Task files, Version files, logs, screenshots, or Git history.
-
-## Git and User Work
-
-Before changing the project, inspect `git status` when Git is available.
-
-Never overwrite, discard, or silently absorb unrelated user changes.
-
-Do not use destructive operations such as:
-
-- `git reset --hard`
-- `git clean -fd`
-- forced checkout over user changes
-- forced push
-
-Designer and Builder must not commit, tag, push, merge, publish, or release unless the user explicitly authorizes that action.
-
-After a Task is `Verified`, the main agent or user may create an atomic commit containing only that Task's intended changes.
-
-## Project Commands
-
-Use only commands confirmed by the repository, `docs/GAME_SPEC.md`, package configuration, engine configuration, or direct inspection.
-
-Do not invent build, test, export, or platform commands.
-
-If no automated check exists, provide a reproducible manual check and mark automation as unavailable rather than fabricating it.
-
-## Project-Wide Prohibitions
-
-1. Do not change product intent to fit the current architecture.
-2. Do not expand a Task into unrelated features, refactors, dependency upgrades, or migrations.
-3. Do not hide failed builds, failed tests, warnings, runtime errors, missing evidence, or unverified behavior.
-4. Do not make a test pass by weakening valid assertions, skipping failures, enlarging tolerances without justification, or redefining faulty behavior as expected.
-5. Do not modify generated caches, import caches, temporary build artifacts, or unrelated engine-managed files unless the active Task explicitly requires it.
-6. Do not claim a Task or Version is verified when a required gate has not passed.
-7. Do not perform external side-effect actions without explicit user authorization.
-8. Do not create duplicate documents for information already owned by the active Task, Version, GAME_SPEC, or Git.
-
-## Maintaining This Harness
-
-Keep this file focused on durable routing, boundaries, and completion rules.
-
-Do not add a new rule after a single minor mistake. Add or revise rules when a failure pattern repeats or when a missing boundary creates material risk.
+- Inspect Git status before write work.
+- Never overwrite or discard unrelated user changes.
+- Do not use destructive Git commands such as `git reset --hard` or `git clean`.
+- Builders must not commit, tag, push, merge, upload, submit, or publish autonomously.
+- Credentials, private keys, certificates, tokens, and production secrets must not be written into Tasks, Versions, logs, screenshots, prompts, or Git history.

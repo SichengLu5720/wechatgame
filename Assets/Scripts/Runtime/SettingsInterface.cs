@@ -5,10 +5,10 @@ namespace StairsCrowd.Runtime
     {
         bool settingsOpen;int settingsConfirm,suppressInputThrough=-1;IslandAudio islandAudio;
         public bool SettingsOpen {get{return settingsOpen;}}
-        public bool InterfaceBlocksInput {get{return PreparingMove||settingsOpen||Time.frameCount<=suppressInputThrough;}}
+        public bool InterfaceBlocksInput {get{return FailureLocked||PreparingMove||settingsOpen||Time.frameCount<=suppressInputThrough;}}
         static readonly Color UiPaper=new Color(.96f,.93f,.86f),UiInk=new Color(.28f,.36f,.35f),UiSage=new Color(.43f,.61f,.54f),UiMuted=new Color(.70f,.72f,.66f);
         Texture2D uiCircle;
-        public void OpenSettings(){CancelPropSelection();CancelViewPointer();settingsConfirm=0;settingsOpen=true;if(Feedback!=null)Feedback.Cancel();}
+        public void OpenSettings(){if(FailureLocked)return;CancelPropSelection();CancelViewPointer();settingsConfirm=0;settingsOpen=true;if(Feedback!=null)Feedback.Cancel();}
         public void CloseSettings(){settingsOpen=false;settingsConfirm=0;CancelViewPointer();suppressInputThrough=Time.frameCount+1;}
         void Circle(Rect rect,Color color)
         {
@@ -30,7 +30,7 @@ namespace StairsCrowd.Runtime
             if(kind==6){Stroke(c+new Vector2(-5,11)*s,c+new Vector2(-5,-14)*s,3*s,color);Stroke(c+new Vector2(-5,-14)*s,c+new Vector2(14,-18)*s,3*s,color);Stroke(c+new Vector2(14,-18)*s,c+new Vector2(14,7)*s,3*s,color);Circle(new Rect(c.x-17*s,c.y+5*s,13*s,10*s),color);Circle(new Rect(c.x+2*s,c.y+2*s,13*s,10*s),color);}
         }
         bool RoundButton(Rect r,string text,Color color){Round(new Rect(r.x,r.y+3,r.width,r.height),14,new Color(.25f,.3f,.25f,.13f));Round(r,14,color);bool hit=GUI.Button(r,GUIContent.none,GUIStyle.none);GUI.Label(r,text,button);return hit;}
-        void SettingsGear(float w,float top){var r=new Rect(w-76,top,52,52);Circle(new Rect(r.x,r.y+3,r.width,r.height),new Color(.2f,.3f,.25f,.12f));Circle(r,new Color(.16f,.23f,.29f));Icon(new Rect(r.x+9,r.y+9,34,34),3,UiPaper);if(GUI.Button(r,GUIContent.none,GUIStyle.none))OpenSettings();}
+        void SettingsGear(float w,float top){var r=new Rect(w-76,top,52,52);Circle(new Rect(r.x,r.y+3,r.width,r.height),new Color(.2f,.3f,.25f,.12f));Circle(r,new Color(.16f,.23f,.29f));Icon(new Rect(r.x+9,r.y+9,34,34),3,UiPaper);if(!FailureLocked&&GUI.Button(r,GUIContent.none,GUIStyle.none))OpenSettings();}
         void SettingRow(Rect r,string label,int icon,bool value,System.Action<bool> change)
         {
             Icon(new Rect(r.x+20,r.y+20,40,40),icon,UiInk);GUI.Label(new Rect(r.x+82,r.y,r.width-190,r.height),label,Style(23,FontStyle.Bold));

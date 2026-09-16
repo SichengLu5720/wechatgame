@@ -144,6 +144,9 @@ Previous Stable Commit or Tag:
 - [ ] Included Tasks 之间没有阻断性冲突
 - [ ] 共享状态与生命周期没有明显错误
 - [ ] 场景、Prefab、Node、资源与序列化引用完整
+- [ ] 所有生产资产均来自已验证 Task，且 asset ID、路径与绑定正确
+- [ ] 纹理、图集、字体、动画或其他资源的导入设置符合 Task 合同
+- [ ] 正式构建中不存在需求预览图、临时占位图或未批准资产
 - [ ] 配置没有互相覆盖
 - [ ] 存档或数据兼容性符合预期
 - [ ] 平台条件代码没有明显异常（如适用）
@@ -276,6 +279,7 @@ Status: Pending | Accepted | Rejected | Not Required
 - [ ] 核心流程能够完整运行
 - [ ] 操作与主要体验没有阻断问题
 - [ ] 画面、动画与声音没有明显异常
+- [ ] 最终生产美术在目标设备与真实尺寸下清晰、一致且无错误裁切
 - [ ] 已知问题处于可接受范围
 - [ ] RC 可以进入目标发布渠道
 
@@ -300,7 +304,7 @@ Status: Not Required | Not Integrated | Draft | Verified
 
 ## Account and Access Prerequisites
 
-首次接入目标平台时，根据当时最新官方文档填写。
+首次接入目标平台时，根据当时最新官方文档填写。微信体验版发布填写 `docs/WECHAT_EXPERIENCE_RELEASE_WORKFLOW.md`，并且只能在全部 Check 已确认、Human Release Check 已接受、Release Decision 已批准后执行 Git 推送与平台上传。
 
 ## Project Integration Requirements
 

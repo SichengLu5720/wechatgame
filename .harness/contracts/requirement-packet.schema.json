@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gamedev-harness/requirement-packet.schema.json",
+  "title": "GameDev Harness Requirement Packet",
+  "description": "PM 在与用户确认需求后，同时发送给 Feature Designer 与 Requirement Visualizer 的唯一结构化输入。",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "requirement_id",
+    "requirement_version",
+    "task_id",
+    "task_slug",
+    "status",
+    "user_request_verbatim",
+    "problem",
+    "player_outcome",
+    "scope",
+    "non_goals",
+    "constraints",
+    "confirmed_decisions",
+    "accepted_assumptions",
+    "open_questions",
+    "acceptance_intent",
+    "visual_brief"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "requirement_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requirement_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "status": {
+      "type": "string",
+      "const": "confirmed"
+    },
+    "user_request_verbatim": {
+      "type": "string"
+    },
+    "problem": {
+      "type": "string",
+      "minLength": 1
+    },
+    "player_outcome": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "scope": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "non_goals": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "confirmed_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["topic", "decision"],
+        "properties": {
+          "topic": { "type": "string" },
+          "decision": { "type": "string" },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "accepted_assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["assumption", "impact"],
+        "properties": {
+          "assumption": { "type": "string" },
+          "impact": { "type": "string" },
+          "reversible": { "type": "boolean" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "acceptance_intent": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "context_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "reference_assets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "visual_brief": {
+      "type": "object",
+      "required": ["required", "gate", "purpose", "must_show", "must_not_imply"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "gate": {
+          "type": "string",
+          "enum": ["None", "Reference", "Approval Required"]
+        },
+        "type_hint": { "type": "string" },
+        "purpose": { "type": "string" },
+        "must_show": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "must_not_imply": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fidelity": {
+          "type": "string",
+          "enum": ["wireframe", "diagram", "storyboard", "concept", "auto"]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

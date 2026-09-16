@@ -1,0 +1,30 @@
+{
+  "requirement_id": "REQ-001",
+  "requirement_version": 3,
+  "task_id": "TASK-001",
+  "task_slug": "failure-and-level-progress",
+  "status": "Generated",
+  "artifact_path": ".harness/previews/failure-and-level-progress/requirement-preview.png",
+  "preview_type": "UI Mockup",
+  "illustrates": [
+    "首页显示当前进度并提供继续第 N 关主操作",
+    "失败弹窗显示失败原因、当前关卡、重试本关与返回主页",
+    "深青灰、米白与柔和珊瑚色的现有风格"
+  ],
+  "assumptions": [
+    "最终 UI 继续由项目现有运行时界面体系实现",
+    "像素级间距与字体尺寸在实机安全区检查中调整"
+  ],
+  "does_not_define": [
+    "生产资产规格",
+    "精确像素尺寸",
+    "失败算法实现",
+    "关卡选择功能"
+  ],
+  "divergence_warnings": [
+    "v3 仅把该图作为布局和色调参考：图中的‘当前局面无法继续推进’必须从运行时界面移除。",
+    "失败弹窗以‘本关失败’指代当前关卡，没有单独显示关卡编号；运行时仍须按冻结合同明确显示当前关卡。"
+  ],
+  "user_decision": "Accepted with v3 text override",
+  "user_decision_date": "2026-09-16"
+}

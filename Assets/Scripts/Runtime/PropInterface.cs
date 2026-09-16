@@ -14,10 +14,10 @@ namespace StairsCrowd.Runtime
         public int PropTarget {get;private set;}=-1;
         readonly System.Random propRandom=new System.Random();
         void ResetProps(){CancelPropSelection();ClearPropCandidateCache();UndoRemaining=ShuffleRemaining=1;PlatformRemaining=0;PropTarget=-1;settingsOpen=false;settingsConfirm=0;}
-        bool PropReady(){return board!=null&&!Home&&!editing&&!IntroVisible&&!IsAssembling&&!Busy&&!board.Solved&&!settingsOpen;}
+        bool PropReady(){return board!=null&&!FailureLocked&&!Home&&!editing&&!IntroVisible&&!IsAssembling&&!Busy&&!board.Solved&&!settingsOpen;}
         void RememberPropTarget(int node){if(node>=0&&node<board.Level.nodes.Length&&!Rules.Complete(board.Level,board.Current,node))PropTarget=node;}
-        public bool UseUndoProp(){if(PropSelection!=0||Busy||settingsOpen||Home||editing||IsAssembling||IntroVisible||UndoRemaining==0||!board.CanUndo)return false;Undo();UndoRemaining--;if(islandAudio)islandAudio.Play();return true;}
-        public bool UseShuffleProp(){if(!PropReady()||ShuffleRemaining==0)return false;int node=selected>=0?selected:PropTarget;if(!PropActions.Shuffle(board,node,propRandom)){message="请选择至少有两种颜色的平台";return false;}ShuffleRemaining--;RefreshPropWorld();message="已洗混所选平台";if(islandAudio)islandAudio.Play();return true;}
+        public bool UseUndoProp(){if(FailureLocked||PropSelection!=0||Busy||settingsOpen||Home||editing||IsAssembling||IntroVisible||UndoRemaining==0||!board.CanUndo)return false;Undo();UndoRemaining--;if(islandAudio)islandAudio.Play();return true;}
+        public bool UseShuffleProp(){if(!PropReady()||ShuffleRemaining==0)return false;int node=selected>=0?selected:PropTarget;if(!PropActions.Shuffle(board,node,propRandom)){message="请选择至少有两种颜色的平台";return false;}ShuffleRemaining--;RefreshPropWorld();EvaluateCurrentBoard();message=FailureLocked?"":"已洗混所选平台";if(islandAudio)islandAudio.Play();return true;}
         public bool UsePlatformProp()
         {
             if(!PlatformPropEnabled||!PropReady()||PlatformRemaining==0)return false;int target=selected>=0?selected:PropTarget;
@@ -26,7 +26,7 @@ namespace StairsCrowd.Runtime
             if(!CachedOrNewCandidate(target,out candidate,out candidateSpace)){message="附近没有可安全连接的位置";return false;}
             var next=board.Current.Clone();Array.Resize(ref next.queues,candidate.nodes.Length);next.queues[next.queues.Length-1]=new List<int>();
             var oldPosition=view.transform.position;var oldRotation=view.transform.rotation;float oldSize=view.orthographicSize;
-            board.ApplyProp(candidate,next);PlatformRemaining--;RefreshPropWorld(candidateSpace);scene.SettleRetired(board.Current);scene.StartAddition(candidate.nodes.Length-1,candidate.edges.Length-1,oldPosition,oldRotation,oldSize);message="中转平台已加入";if(islandAudio)islandAudio.Play();return true;
+            board.ApplyProp(candidate,next);PlatformRemaining--;RefreshPropWorld(candidateSpace);EvaluateCurrentBoard();scene.SettleRetired(board.Current);scene.StartAddition(candidate.nodes.Length-1,candidate.edges.Length-1,oldPosition,oldRotation,oldSize);message=FailureLocked?"":"中转平台已加入";if(islandAudio)islandAudio.Play();return true;
         }
         public static bool TryPlatformCandidate(Board source,int target,System.Random random,out LevelSpec result,out WalkSpace resultSpace)
         {
