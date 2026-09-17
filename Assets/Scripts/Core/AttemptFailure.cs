@@ -8,7 +8,8 @@ namespace StairsCrowd.Core
         Continue,
         Solved,
         NoLegalMoves,
-        OnlyRepeatedMoves
+        OnlyRepeatedMoves,
+        TimedOut
     }
 
     public static class AttemptFailure

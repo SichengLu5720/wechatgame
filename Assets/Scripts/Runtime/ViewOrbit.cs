@@ -80,8 +80,8 @@ namespace StairsCrowd.Runtime
             if(Input.GetMouseButton(0))MoveViewPointer(Input.mousePosition);
             if(Input.GetMouseButtonUp(0))EndViewPointer(Input.mousePosition);
         }
-        void OnApplicationFocus(bool focus){if(Feedback!=null)Feedback.Suspend(!focus);if(!focus)CancelViewPointer();}
-        void OnApplicationPause(bool paused){if(Feedback!=null)Feedback.Suspend(paused);if(paused)CancelViewPointer();}
+        void OnApplicationFocus(bool focus){PauseDaily(StairsCrowd.Core.DailyPause.Focus,!focus);if(Feedback!=null)Feedback.Suspend(!focus);if(!focus)CancelViewPointer();}
+        void OnApplicationPause(bool paused){PauseDaily(StairsCrowd.Core.DailyPause.Application,paused);if(Feedback!=null)Feedback.Suspend(paused);if(paused)CancelViewPointer();}
     }
 }
 

@@ -27,6 +27,7 @@ namespace StairsCrowd.Runtime
             if(kind==2&&!PlatformPropEnabled)return false;
             if(kind==PropSelection){CancelPropSelection();return true;}
             if(!PropReady()||(kind!=1&&kind!=2)||(kind==1?ShuffleRemaining:PlatformRemaining)==0)return false;
+            if(!DailyInput(true))return false;
             CancelPropSelection();CancelViewPointer();selected=-1;PropTarget=-1;scene.Highlight(board,-1);
             PropSelection=kind;FindingPropTargets=true;SetNightFocus();StartCoroutine(FindPropTargets(selectionEpoch));return true;
         }

@@ -20,6 +20,7 @@ namespace StairsCrowd.Runtime
             for(int i=0;i<count;i++){
                 var p=previous.pool[i];p.SetSelected(false);p.root.gameObject.SetActive(false);
                 p.root.SetParent(root.transform,false);p.presentationLift=BridgeLift;
+                p.walkGround=space;p.remainingDistance=float.PositiveInfinity;p.waterBird.Reset();
                 p.selectionRing.GetComponent<MeshFilter>().sharedMesh=selectionMesh;
                 p.selectionRing.GetComponent<Renderer>().sharedMaterial=selectionInk;
                 foreach(var r in p.root.GetComponentsInChildren<Renderer>(true))r.SetPropertyBlock(null);
@@ -63,7 +64,7 @@ namespace StairsCrowd.Runtime
         void PrepareNextScene()
         {
             // Work only while input/movement/intro/assembly is idle. Never build from a move request.
-            if(Home||editing||customPlaying||IsAssembling||IntroVisible||motion!=null||PreparingMove||PropSelection!=0||TutorialExiting)return;
+            if(DailyActive||Home||editing||customPlaying||IsAssembling||IntroVisible||motion!=null||PreparingMove||PropSelection!=0||TutorialExiting)return;
             int index=levelIndex+1;if(index>=catalog.levels.Length)return;
             if(preparedIndex==index&&NextSceneReady&&preparedScene.space.Level==catalog.levels[index])return;
             var timer=System.Diagnostics.Stopwatch.StartNew();

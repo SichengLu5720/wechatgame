@@ -5,6 +5,8 @@ namespace StairsCrowd.Runtime
 {
     public static class WeChatPlatform
     {
+        public static event Action<bool> BackgroundChanged;
+        static void NotifyBackground(bool hidden){BackgroundChanged?.Invoke(hidden);}
         public static void CopyText(string text,Action done,Action<string> fail)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR && WECHAT_MINIGAME
@@ -34,6 +36,8 @@ namespace StairsCrowd.Runtime
             WeChatWASM.WX.InitSDK(code =>
             {
                 Debug.Log("WeChat SDK initialized: " + code);
+                WeChatWASM.WX.OnHide(_=>NotifyBackground(true));
+                WeChatWASM.WX.OnShow(_=>NotifyBackground(false));
                 try{
                     var info=WeChatWASM.WX.GetWindowInfo();
                     if(info.pixelRatio>2)WeChatWASM.WX.SetDevicePixelRatio(2);

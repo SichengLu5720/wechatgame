@@ -19,6 +19,7 @@ namespace StairsCrowd.Runtime
         const string LibraryKey="islands.nightv1.editor.library.v1";
         public void OpenEditor()
         {
+            LeaveDaily();
             DiscardPreparedScene();CancelPending();introKinds.Clear();Home=true;editing=true;selected=-1;scene.root.SetActive(false);
             if(builtInCount==0)builtInCount=catalog.levels.Length;
             if(draft==null)draft=LevelShare.Copy(catalog.levels[0]);

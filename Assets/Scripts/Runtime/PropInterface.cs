@@ -14,10 +14,10 @@ namespace StairsCrowd.Runtime
         public int PropTarget {get;private set;}=-1;
         readonly System.Random propRandom=new System.Random();
         void ResetProps(){CancelPropSelection();ClearPropCandidateCache();UndoRemaining=ShuffleRemaining=1;PlatformRemaining=0;PropTarget=-1;settingsOpen=false;settingsConfirm=0;}
-        bool PropReady(){return board!=null&&!FailureLocked&&!Home&&!editing&&!IntroVisible&&!IsAssembling&&!Busy&&!board.Solved&&!settingsOpen;}
+        bool PropReady(){return board!=null&&!FailureLocked&&!Home&&!editing&&!IntroVisible&&!IsAssembling&&!Busy&&!board.Solved&&!settingsOpen&&DailyInput();}
         void RememberPropTarget(int node){if(node>=0&&node<board.Level.nodes.Length&&!Rules.Complete(board.Level,board.Current,node))PropTarget=node;}
-        public bool UseUndoProp(){if(FailureLocked||PropSelection!=0||Busy||settingsOpen||Home||editing||IsAssembling||IntroVisible||UndoRemaining==0||!board.CanUndo)return false;Undo();UndoRemaining--;if(islandAudio)islandAudio.Play();return true;}
-        public bool UseShuffleProp(){if(!PropReady()||ShuffleRemaining==0)return false;int node=selected>=0?selected:PropTarget;if(!PropActions.Shuffle(board,node,propRandom)){message="请选择至少有两种颜色的平台";return false;}ShuffleRemaining--;RefreshPropWorld();EvaluateCurrentBoard();message=FailureLocked?"":"已洗混所选平台";if(islandAudio)islandAudio.Play();return true;}
+        public bool UseUndoProp(){if(FailureLocked||PropSelection!=0||Busy||settingsOpen||Home||editing||IsAssembling||IntroVisible||UndoRemaining==0||!board.CanUndo||!DailyInput(true))return false;Undo();UndoRemaining--;if(islandAudio)islandAudio.Play();return true;}
+        public bool UseShuffleProp(){if(!PropReady()||ShuffleRemaining==0)return false;int node=selected>=0?selected:PropTarget;if(!PropActions.CanShuffle(board,node)){message="请选择至少有两种颜色的平台";return false;}if(!DailyInput(true)||!PropActions.Shuffle(board,node,propRandom))return false;ShuffleRemaining--;RefreshPropWorld();EvaluateCurrentBoard();message=FailureLocked?"":"已洗混所选平台";if(islandAudio)islandAudio.Play();return true;}
         public bool UsePlatformProp()
         {
             if(!PlatformPropEnabled||!PropReady()||PlatformRemaining==0)return false;int target=selected>=0?selected:PropTarget;

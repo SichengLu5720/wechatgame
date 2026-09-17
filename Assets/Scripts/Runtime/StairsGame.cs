@@ -11,7 +11,7 @@ namespace StairsCrowd.Runtime
         public string message="";public InteractionFeedback Feedback {get;private set;}bool[] completedFeedback;
         readonly System.Collections.Generic.List<float> arrivalTimes=new System.Collections.Generic.List<float>();
         Font font;bool ownsFont;GUIStyle title,body,small,button;Texture2D white,startHero;
-        public bool Home {get;private set;}public bool IsAssembling{get{return assembly!=null||reveal<.22f;}} public double LastMoveMilliseconds{get;private set;}public double LastPlanningMilliseconds{get;private set;}public double LastCompositionMilliseconds{get;private set;} public bool LastMoveCached{get;private set;} AssemblySequence assembly;float reveal=1;bool drawingModal; readonly System.Collections.Generic.Dictionary<int,WalkSpace> spaces=new System.Collections.Generic.Dictionary<int,WalkSpace>(); int lastWidth,lastHeight;bool chooseLevel;public bool Busy{get{return TutorialExiting||PreparingMove||motion!=null||IsAssembling||(scene!=null&&(scene.HasReveal||scene.HasRetreat||scene.HasAddition));}}
+        public bool Home {get;private set;}public bool IsAssembling{get{return assembly!=null||reveal<.22f;}} public double LastMoveMilliseconds{get;private set;}public double LastPlanningMilliseconds{get;private set;}public double LastCompositionMilliseconds{get;private set;} public bool LastMoveCached{get;private set;} AssemblySequence assembly;float reveal=1;bool drawingModal; readonly System.Collections.Generic.Dictionary<int,WalkSpace> spaces=new System.Collections.Generic.Dictionary<int,WalkSpace>(); int lastWidth,lastHeight;bool chooseLevel;public bool Busy{get{return TutorialExiting||PreparingMove||motion!=null||IsAssembling||(scene!=null&&(!scene.PresentationSettled||scene.HasReveal||scene.HasRetreat||scene.HasAddition));}}
         void InitializeGame()
         {
             var preview=GameObject.Find("Editor Preview");if(preview)DestroyImmediate(preview);Application.targetFrameRate=60;Application.runInBackground=true;
@@ -43,35 +43,37 @@ namespace StairsCrowd.Runtime
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-loadingtest")>=0)gameObject.AddComponent<LoadingVerification>();
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-deliverytest")>=0)gameObject.AddComponent<DeliveryPlayVerification>();
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-failureprogresstest")>=0)gameObject.AddComponent<FailureProgressRuntimeVerification>();
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-dailytest")>=0)gameObject.AddComponent<DailyChallengeRuntimeVerification>();
 
             
         }
-        public void LoadLevel(int index){DisposeEditorPreview();editing=false;Home=false;if(index<builtInCount)customPlaying=false;LoadBoard(index,true);}
+        public void LoadLevel(int index){LeaveDaily();DisposeEditorPreview();editing=false;Home=false;if(index<builtInCount)customPlaying=false;LoadBoard(index,true);}
         void LoadBoard(int index,bool animate)
         {
-            CancelPending();ClearFailureState("level loaded",true);ResetProps();levelIndex=Mathf.Clamp(index,0,catalog.levels.Length-1);board=new Board(catalog.levels[levelIndex]);BeginAttempt();SyncCompletionFeedback();
-            var prepared=ConsumePreparedScene(levelIndex);
+            CancelPending();ClearFailureState("level loaded",true);ResetProps();levelIndex=DailyActive?-1:Mathf.Clamp(index,0,catalog.levels.Length-1);board=new Board(DailyActive?dailyLevel:catalog.levels[levelIndex]);BeginAttempt();SyncCompletionFeedback();
+            var prepared=DailyActive?null:ConsumePreparedScene(levelIndex);
             if(prepared!=null){if(spaces.Count>=3)spaces.Clear();spaces[levelIndex]=prepared.space;}
-            if(!spaces.TryGetValue(levelIndex,out space)||space.Level!=board.Level){if(spaces.Count>=3)spaces.Clear();var nav=Resources.Load<TextAsset>(CampaignRepository.NavigationPath(board.Level,levelIndex));space=new WalkSpace(board.Level,nav?nav.bytes:null,CampaignRepository.GeometryOnly(board.Level));spaces[levelIndex]=space;}
+            if(!spaces.TryGetValue(levelIndex,out space)||space.Level!=board.Level){if(spaces.Count>=3)spaces.Clear();var nav=Resources.Load<TextAsset>(DailyActive?DailyChallengeRepository.NavigationPath(board.Level):CampaignRepository.NavigationPath(board.Level,levelIndex));space=new WalkSpace(board.Level,nav?nav.bytes:null,CampaignRepository.GeometryOnly(board.Level));spaces[levelIndex]=space;}
             SetViewport();if(scene==null||scene.space!=space){var previous=scene;scene=prepared??new CrowdScene(space,view);scene.TakePeopleFrom(previous);if(previous!=null)previous.Dispose();}scene.root.SetActive(true);scene.HomeFraming=Home;scene.FitCamera();scene.ClearPeople();selected=-1;chooseLevel=false;message="";scene.Highlight(board,-1);
             scene.RestoreWorld(board.Current);ConfigureIntro();WarmMoves();if(animate)BeginAssembly();EvaluateCurrentBoard();
         }
         void WarmMoves(){FastMovement.Prepare(space);}
-        public void ReturnHome(){DisposeEditorPreview();editing=false;customPlaying=false;shareOpen=false;libraryOpen=false;Home=true;LoadBoard(CampaignProgress.CurrentIndex(builtInCount),true);scene.root.SetActive(true);}
-        public void StartGame(){if(!Home)return;editing=false;Home=false;BeginAttempt();SetViewport();scene.HomeFraming=false;scene.FitCamera();ConfigureIntro();WarmMoves();BeginAssembly();EvaluateCurrentBoard();}
+        public void ReturnHome(){LeaveDaily();DisposeEditorPreview();editing=false;customPlaying=false;shareOpen=false;libraryOpen=false;Home=true;LoadBoard(CampaignProgress.CurrentIndex(builtInCount),true);scene.root.SetActive(true);}
+        public void StartGame(){if(!Home||DailyCalendarOpen)return;LeaveDaily();editing=false;Home=false;BeginAttempt();SetViewport();scene.HomeFraming=false;scene.FitCamera();ConfigureIntro();WarmMoves();BeginAssembly();EvaluateCurrentBoard();}
         void BeginAssembly(){if(assembly!=null)assembly.Advance(assembly.Duration);scene.RestoreWorld(board.Current);scene.ClearPeople();assembly=new AssemblySequence(scene);reveal=1;message="";}        void CancelPending(bool settle=true){arrivalTimes.Clear();CancelTutorialExit();CancelPendingMove();CancelViewPointer();DisposeIntroPreview();if(Feedback!=null)Feedback.Cancel();if(settle&&assembly!=null)assembly.Advance(assembly.Duration);assembly=null;reveal=1;motion=null;clock=0;}
-        public void ResetLevel(){if(Home)return;CancelPending();ClearFailureState("level reset",true);board.Reset();BeginAttempt();ResetProps();if(space.Level!=board.Level){scene.Dispose();space=new WalkSpace(board.Level);scene=new CrowdScene(space,view);scene.HomeFraming=false;SetViewport();scene.FitCamera();}SyncCompletionFeedback();ConfigureIntro();WarmMoves();BeginAssembly();selected=-1;scene.Highlight(board,-1);message="";EvaluateCurrentBoard();}
-        public void Undo(){if(Home||IsAssembling||IntroVisible||FailureLocked)return;if(!board.CanUndo)return;board.Undo();RefreshPropWorld();message="";EvaluateCurrentBoard();}
+        public void ResetLevel(){if(Home||!ResetDailyAttempt())return;CancelPending();ClearFailureState("level reset",true);board.Reset();BeginAttempt();ResetProps();if(space.Level!=board.Level){scene.Dispose();space=new WalkSpace(board.Level);scene=new CrowdScene(space,view);scene.HomeFraming=false;SetViewport();scene.FitCamera();}SyncCompletionFeedback();ConfigureIntro();WarmMoves();BeginAssembly();selected=-1;scene.Highlight(board,-1);message="";EvaluateCurrentBoard();}
+        public void Undo(){if(Home||IsAssembling||IntroVisible||FailureLocked||!DailyInput())return;if(!board.CanUndo)return;board.Undo();RefreshPropWorld();message="";EvaluateCurrentBoard();}
         void Rebuild(){selected=-1;scene.RestoreWorld(board.Current);scene.Populate(board.Current);scene.Highlight(board,-1);for(int n=0;n<board.Level.nodes.Length;n++)if(Rules.Complete(board.Level,board.Current,n))scene.StartRetreat(n);}
         public bool TryMoveSync(int a,int b)
         {
-            if(FailureLocked||PropSelection!=0||(scene!=null&&scene.HasAddition)||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing)return false;var move=Rules.Preview(board.Level,board.Current,a,b);if(!move.ok){message=move.reason;return false;}
-            try{var timer=System.Diagnostics.Stopwatch.StartNew();LastMoveCached=false;var plan=FastMovement.Build(space,board.Current,move);LastPlanningMilliseconds=timer.Elapsed.TotalMilliseconds;Commit(plan);LastMoveMilliseconds=timer.Elapsed.TotalMilliseconds;return true;}
+            if(FailureLocked||PropSelection!=0||(scene!=null&&scene.HasAddition)||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||!DailyInput())return false;var move=Rules.Preview(board.Level,board.Current,a,b);if(!move.ok){message=move.reason;return false;}
+            if(!DailyInput(true))return false;
+            try{var timer=System.Diagnostics.Stopwatch.StartNew();LastMoveCached=false;var plan=FastMovement.Build(space,board.Current,move);LastPlanningMilliseconds=timer.Elapsed.TotalMilliseconds;if(!Commit(plan))return false;LastMoveMilliseconds=timer.Elapsed.TotalMilliseconds;return true;}
             catch(Exception error){if(CloudVerification.Active)Debug.Log("MOVE DIAGNOSTIC "+error);message="这条路线暂时无法通行，可以继续调整布局";return false;}
         }
-        void Commit(MotionPlan plan){var composition=System.Diagnostics.Stopwatch.StartNew();var combined=MotionComposer.Append(motion,clock,plan);if(combined!=plan)combined.PreparePlayback(space);LastCompositionMilliseconds=composition.Elapsed.TotalMilliseconds;board.TryMove(plan.move.from,plan.move.to,plan.finalSlots);EvaluateCurrentBoard();for(int i=0;i<arrivalTimes.Count;i++)arrivalTimes[i]=Mathf.Max(0,arrivalTimes[i]-clock);
+        bool Commit(MotionPlan plan){var composition=System.Diagnostics.Stopwatch.StartNew();var combined=MotionComposer.Append(motion,clock,plan);if(combined!=plan)combined.PreparePlayback(space);LastCompositionMilliseconds=composition.Elapsed.TotalMilliseconds;if(!DailyInput())return false;board.TryMove(plan.move.from,plan.move.to,plan.finalSlots);EvaluateCurrentBoard();for(int i=0;i<arrivalTimes.Count;i++)arrivalTimes[i]=Mathf.Max(0,arrivalTimes[i]-clock);
             float arrival=0;foreach(int group in plan.move.ids)for(int member=0;member<Rules.MembersPerGroup;member++){var t=combined.Track(group*Rules.MembersPerGroup+member);if(t!=null)arrival=Mathf.Max(arrival,t.End);}arrivalTimes.Add(arrival);
-            motion=combined;WarmMoves();clock=0;selected=-1;PropTarget=-1;message="";scene.Highlight(board,-1);Advance(1f/120);}
+            motion=combined;WarmMoves();clock=0;selected=-1;PropTarget=-1;message="";scene.Highlight(board,-1);Advance(1f/120);return true;}
         bool CanSelect(int node)
         {
             return node>=0&&node<board.Level.nodes.Length&&!board.Level.nodes[node].sticky&&board.Current.queues[node].Count>0&&!Rules.Gated(board.Level,board.Current,node)&&!Rules.Complete(board.Level,board.Current,node);
@@ -87,14 +89,14 @@ namespace StairsCrowd.Runtime
         }
         public void ClickPerson(int node)
         {
-            if(FailureLocked||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||board.Solved||node<0||node>=board.Level.nodes.Length)return;if(PropSelection!=0){ChoosePropTarget(node);return;}if(scene.HasAddition)return;RememberPropTarget(node);
+            if(FailureLocked||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||board.Solved||node<0||node>=board.Level.nodes.Length||!DailyInput(true))return;if(PropSelection!=0){ChoosePropTarget(node);return;}if(scene.HasAddition)return;RememberPropTarget(node);
             if(selected==node){selected=-1;message="";scene.Highlight(board,-1);return;}
             if(selected>=0&&SameFrontColor(selected,node)){RequestMove(selected,node);return;}
             if(CanSelect(node))SelectNode(node);
         }
         public void ClickNode(int node)
         {
-            if(FailureLocked||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||board.Solved||node<0||node>=board.Level.nodes.Length)return;if(PropSelection!=0){ChoosePropTarget(node);return;}if(scene.HasAddition)return;RememberPropTarget(node);
+            if(FailureLocked||InterfaceBlocksInput||Home||IsAssembling||IntroVisible||editing||board.Solved||node<0||node>=board.Level.nodes.Length||!DailyInput(true))return;if(PropSelection!=0){ChoosePropTarget(node);return;}if(scene.HasAddition)return;RememberPropTarget(node);
             if(selected==node){selected=-1;message="";scene.Highlight(board,-1);return;}
             if(selected<0){
                 if(CanSelect(node)){SelectNode(node);return;}
@@ -117,15 +119,16 @@ namespace StairsCrowd.Runtime
                 if(completedFeedback[n]||!Rules.Complete(board.Level,board.Current,n))continue;bool arrived=true;
                 for(int row=0;row<board.Current.queues[n].Count&&arrived;row++)for(int member=0;member<Rules.MembersPerGroup;member++){
                     int id=board.Current.queues[n][row]*Rules.MembersPerGroup+member;var track=motion==null?null:motion.Track(id);
-                    if((track!=null&&clock<track.End-.0001f)||Vector3.Distance(scene.people[id].root.position,space.SeatFor(board.Current,n,row,member))>.005f){arrived=false;break;}
+                    if((track!=null&&clock<track.End-.0001f)||!scene.people[id].PresentationSettled||Vector3.Distance(scene.people[id].root.position,space.SeatFor(board.Current,n,row,member))>.005f){arrived=false;break;}
                 }
                 if(arrived&&SafeToRetreat(n)){completedFeedback[n]=true;Feedback.Complete();if(islandAudio)islandAudio.Play(true);scene.StartRetreat(n);}
             }
-            if(board.Solved&&motion==null&&!PreparingMove&&Rules.Completed(board.Level,board.Current)==board.Level.GoalCount)scene.StartFinalRetreat();
+            if(board.Solved&&motion==null&&scene.PresentationSettled&&!PreparingMove&&Rules.Completed(board.Level,board.Current)==board.Level.GoalCount)scene.StartFinalRetreat();
         }
-        void Awake(){WeChatPlatform.Initialize(InitializeGame);}
+        void Awake(){WeChatPlatform.BackgroundChanged+=DailyPlatformBackground;WeChatPlatform.Initialize(InitializeGame);}
         void Update()
         {
+            TickDaily();
             if(settingsOpen){if(Input.GetKeyDown(KeyCode.Escape))CloseSettings();return;}TickEditorEntrance();
             if(editing)TickEditorPreview();
             if(board==null)return;
@@ -140,17 +143,19 @@ namespace StairsCrowd.Runtime
             if(assembly!=null){if(!Home)scene.PreparePresentation(board.Current,2);assembly.Advance(delta);if(assembly.Complete&&(Home||scene.PresentationPrepared)){assembly=null;if(Home){reveal=1;return;}scene.Populate(board.Current);reveal=0;foreach(var p in scene.people)p.root.localScale=Vector3.one*.001f;}return;}
             if(reveal<.22f){reveal=Mathf.Min(.22f,reveal+Mathf.Max(0,delta));float scale=Mathf.SmoothStep(.001f,1,reveal/.22f);foreach(var p in scene.people)p.root.localScale=Vector3.one*scale;return;}
             if(Home||editing||IntroVisible)return;
-            if(motion==null){Feedback.Walk(delta,false);CheckCompletionFeedback();scene.TickWorld(board.Current,delta);PrepareNextScene();return;}clock=Mathf.Min(clock+Mathf.Max(0,delta),motion.duration);
+            if(motion==null){scene.TickWalks(delta);Feedback.Walk(delta,false);CheckCompletionFeedback();scene.TickWorld(board.Current,delta);PrepareNextScene();return;}clock=Mathf.Min(clock+Mathf.Max(0,delta),motion.duration);
             bool walking=false;foreach(var track in motion.tracks){int id=track.actor;
                 if(clock<track.start||clock>=track.End&&clock-delta>=track.End)continue;
                 if(scene.IsRetiring(scene.people[id].tag.node))continue;var p=track.PlaybackPosition(clock);var previous=scene.people[id].root.position;
-                if(p.x==previous.x&&p.z==previous.z){scene.people[id].Pose(previous,Vector3.zero,0,false);continue;}
+                scene.people[id].remainingDistance=track.RemainingDistance(clock);
+                if(p.x==previous.x&&p.z==previous.z){scene.people[id].Pose(p,Vector3.zero,0,false);continue;}
                 var direction=Vector3.ProjectOnPlane(p-previous,Vector3.up);
                 if(clock<track.End&&direction.sqrMagnitude>.000001f)walking=true;
                 scene.people[id].Pose(p,direction,clock*15*FastMovement.SpeedMultiplier+id,clock<track.End&&direction.sqrMagnitude>.000001f);
             }
 
-            if(clock>=motion.duration){motion=null;for(int n=0;n<board.Current.queues.Length;n++)foreach(int group in board.Current.queues[n])for(int member=0;member<Rules.MembersPerGroup;member++){int id=group*Rules.MembersPerGroup+member;scene.people[id].waterBird.Reset();scene.people[id].Pose(space.SeatFor(board.Current,n,board.Current.queues[n].IndexOf(group),member),space.Facing(n),0,false);}scene.RefreshPeople(board.Current);scene.Highlight(board,selected);message="";}
+            if(clock>=motion.duration){motion=null;for(int n=0;n<board.Current.queues.Length;n++)foreach(int group in board.Current.queues[n])for(int member=0;member<Rules.MembersPerGroup;member++){int id=group*Rules.MembersPerGroup+member;scene.people[id].remainingDistance=0;scene.people[id].Pose(space.SeatFor(board.Current,n,board.Current.queues[n].IndexOf(group),member),space.Facing(n),0,false);}scene.RefreshPeople(board.Current);scene.Highlight(board,selected);message="";}
+            scene.TickWalks(delta);
             int completions=Feedback.CompletionCount;CheckCompletionFeedback();
             bool arrived=false;for(int i=arrivalTimes.Count-1;i>=0;i--)if(clock>=arrivalTimes[i]-.0001f){arrived=true;arrivalTimes.RemoveAt(i);}
             if(arrived&&Feedback.CompletionCount==completions)Feedback.Arrive();
@@ -158,7 +163,7 @@ namespace StairsCrowd.Runtime
             scene.TickWorld(board.Current,delta);
         }
         void SetViewport(){lastWidth=Screen.width;lastHeight=Screen.height;if(editing){SetEditorViewport();return;}view.rect=new Rect(0,0,1,1);}
-        void OnDestroy(){DiscardPreparedScene();DisposeEditorPreview();CancelPending(false);ClearFailureState("game destroyed",true);if(scene!=null)scene.Dispose();if(ownsFont&&font)Destroy(font);if(uiCircle)Destroy(uiCircle);if(nightBackdrop)Destroy(nightBackdrop.gameObject);}
+        void OnDestroy(){WeChatPlatform.BackgroundChanged-=DailyPlatformBackground;DiscardPreparedScene();DisposeEditorPreview();CancelPending(false);ClearFailureState("game destroyed",true);if(scene!=null)scene.Dispose();if(ownsFont&&font)Destroy(font);if(uiCircle)Destroy(uiCircle);if(nightBackdrop)Destroy(nightBackdrop.gameObject);}
         GUIStyle Style(int size,FontStyle weight=FontStyle.Normal,TextAnchor anchor=TextAnchor.MiddleLeft)
         {return new GUIStyle{font=font,fontSize=size,fontStyle=weight,alignment=anchor,normal={textColor=new Color(.26f,.32f,.36f)},wordWrap=true};}
         void InitStyles(){if(title!=null)return;title=Style(31,FontStyle.Bold);body=Style(17);small=Style(13);button=Style(17,FontStyle.Bold,TextAnchor.MiddleCenter);}

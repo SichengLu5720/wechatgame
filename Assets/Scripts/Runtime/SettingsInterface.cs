@@ -5,11 +5,11 @@ namespace StairsCrowd.Runtime
     {
         bool settingsOpen;int settingsConfirm,suppressInputThrough=-1;IslandAudio islandAudio;
         public bool SettingsOpen {get{return settingsOpen;}}
-        public bool InterfaceBlocksInput {get{return FailureLocked||PreparingMove||settingsOpen||Time.frameCount<=suppressInputThrough;}}
+        public bool InterfaceBlocksInput {get{return DailyCalendarOpen||(DailyActive&&DailyClock.Result!=StairsCrowd.Core.DailyResult.Pending)||FailureLocked||PreparingMove||settingsOpen||Time.frameCount<=suppressInputThrough;}}
         static readonly Color UiPaper=new Color(.96f,.93f,.86f),UiInk=new Color(.28f,.36f,.35f),UiSage=new Color(.43f,.61f,.54f),UiMuted=new Color(.70f,.72f,.66f);
         Texture2D uiCircle;
-        public void OpenSettings(){if(FailureLocked)return;CancelPropSelection();CancelViewPointer();settingsConfirm=0;settingsOpen=true;if(Feedback!=null)Feedback.Cancel();}
-        public void CloseSettings(){settingsOpen=false;settingsConfirm=0;CancelViewPointer();suppressInputThrough=Time.frameCount+1;}
+        public void OpenSettings(){if(FailureLocked||DailyCalendarOpen||(DailyActive&&DailyClock.Result!=StairsCrowd.Core.DailyResult.Pending))return;PauseDaily(StairsCrowd.Core.DailyPause.Settings,true);if(FailureLocked)return;CancelPropSelection();CancelViewPointer();settingsConfirm=0;settingsOpen=true;if(Feedback!=null)Feedback.Cancel();}
+        public void CloseSettings(){PauseDaily(StairsCrowd.Core.DailyPause.Settings,false);settingsOpen=false;settingsConfirm=0;CancelViewPointer();suppressInputThrough=Time.frameCount+1;}
         void Circle(Rect rect,Color color)
         {
             if(!uiCircle){uiCircle=new Texture2D(96,96,TextureFormat.RGBA32,false);uiCircle.wrapMode=TextureWrapMode.Clamp;var pixels=new Color[96*96];for(int y=0;y<96;y++)for(int x=0;x<96;x++){float d=Vector2.Distance(new Vector2(x+.5f,y+.5f),new Vector2(48,48));pixels[y*96+x]=new Color(1,1,1,Mathf.Clamp01(48-d));}uiCircle.SetPixels(pixels);uiCircle.Apply();}
@@ -70,7 +70,7 @@ namespace StairsCrowd.Runtime
         {
             // Floating controls: no opaque footer or shared tray.
             float scale=Screen.width/w,top=Mathf.Max(16,(Screen.height-Screen.safeArea.yMax)/scale+12),bottomInset=Mathf.Max(14,Screen.safeArea.y/scale+8);
-            Round(new Rect(w/2-91,top+3,182,54),18,new Color(.13f,.21f,.28f,.85f));GUI.Label(new Rect(w/2-86,top+3,172,54),customPlaying?"自由关卡":"第 "+(levelIndex+1)+" 关",NightStyle(24,FontStyle.Bold,TextAnchor.MiddleCenter));SettingsGear(w,top+3);
+            Round(new Rect(w/2-91,top+3,182,54),18,new Color(.13f,.21f,.28f,.85f));GUI.Label(new Rect(w/2-86,top+3,172,54),DailyActive?"每日挑战  "+DailyTimeText:customPlaying?"自由关卡":"第 "+(levelIndex+1)+" 关",NightStyle(DailyActive?19:24,FontStyle.Bold,TextAnchor.MiddleCenter));SettingsGear(w,top+3);
             GUI.Label(new Rect(24,top+12,100,32),"步数 "+board.Moves,NightStyle(17));
             float y=h-bottomInset-112;
             bool ready=PropReady();float cx=w/2;

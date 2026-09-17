@@ -1,0 +1,42 @@
+{
+  "task_id": "TASK-002",
+  "task_version": 1,
+  "revision": "r002",
+  "mode": "integrated_visual_qa",
+  "status": "Visual QA Passed",
+  "source_artifacts": "artifacts/task002/player-r3/",
+  "runtime_evidence": "artifacts/task002/player-r3/runtime.json",
+  "evidence": [
+    "artifacts/task002/player-r3/home-390x844.png",
+    "artifacts/task002/player-r3/home-700x1000.png",
+    "artifacts/task002/player-r3/calendar-390x844.png",
+    "artifacts/task002/player-r3/calendar-700x1000.png",
+    "artifacts/task002/player-r3/timer-390x844.png",
+    "artifacts/task002/player-r3/timeout-390x844.png",
+    "artifacts/task002/player-r3/complete-390x844.png",
+    "artifacts/task002/player-r3/calendar-complete-390x844.png",
+    "artifacts/task002/player-r3/calendar-six-rows.png",
+    "artifacts/task002/player-r3/calendar-leap-day.png"
+  ],
+  "checks": {
+    "home_entry_hierarchy": "Pass: 每日挑战位于继续冒险入口正下方，390x844 与 700x1000 均在安全区内清晰可见",
+    "current_month_calendar": "Pass: 日历仅展示一个当前月份，含关闭按钮、星期标题和日期网格；未出现历史月份导航",
+    "today_state": "Pass: 当天日期以柔和珊瑚色高亮，并提供挑战今日按钮",
+    "completed_state": "Pass: 完成日期显示薄荷色勾选；完成态只提供返回主页",
+    "calendar_layout_variants": "Pass: 六行月份和闰日月份均在竖屏面板内完整显示，无裁切或按钮重叠",
+    "timer_hud": "Pass: 每日挑战标题与 3:00 位于顶部 HUD，未遮挡关卡主体；截图为首次交互前的显示状态",
+    "timeout_state": "Pass: 超时面板明确显示本关失败与时间到了，并提供重试本关/返回主页；未出现奖励或下一关",
+    "safe_area_readability": "Pass: 390x844 与 700x1000 的主要按钮、日期网格、顶部 HUD 均留有安全边距且文字可读",
+    "forbidden_elements": "Pass: 未发现金币、奖励条、连续奖励、历史月份切换、每日挑战完成后的再次挑战或下一关入口"
+  },
+  "visual_findings": [
+    "当前截图中的背景仍为真实游戏场景，未混入 r001 的品牌、狐狸、重绘场景或装饰文案。",
+    "初始日历中历史日期与未来日期使用同一低对比日期样式；由于唯一操作是挑战今日，视觉上未构成错误的可玩入口，但可在 Human Check 中确认是否需要更明确的只读表达。"
+  ],
+  "behavioral_limits": [
+    "截图可以确认 3:00 的位置和未启动显示，不能单独证明首次人物/平台/道具交互才启动计时。",
+    "截图不能单独证明设置与应用后台暂停；这些应以运行时测试证据为准。",
+    "runtime.json 报告 passed=true、assertions=178、storage=isolated-verification。"
+  ],
+  "concept_reference_treatment": "仅保留参考图的月份标题、七列日期网格、今日高亮和完成勾选的信息层级；未要求复刻其紫色、金色、奖励或具体造型。"
+}

@@ -13,7 +13,7 @@ namespace StairsCrowd.Runtime
         public AttemptOutcome CurrentAttemptOutcome {get;private set;}
         public int AttemptSeenCount {get{return attemptSeen.Count;}}
         const string FailureTitle="本关失败",FailureRetry="重试本关",FailureHome="返回主页";
-        string FailureLevelText {get{return customPlaying?"自由关卡":"第 "+(levelIndex+1)+" 关";}}
+        string FailureLevelText {get{return DailyActive?(CurrentAttemptOutcome==AttemptOutcome.TimedOut?"时间到了 · 每日挑战":"每日挑战"):customPlaying?"自由关卡":"第 "+(levelIndex+1)+" 关";}}
         public string FailurePanelCopy {get{return FailureTitle+"|"+FailureLevelText+"|"+FailureRetry+"|"+FailureHome;}}
 
         void ClearFailureState(string reason,bool clearHistory=false)
@@ -30,6 +30,7 @@ namespace StairsCrowd.Runtime
 
         void EvaluateCurrentBoard()
         {
+            if(DailyActive&&DailyClock.Result==DailyResult.Failed&&FailureLocked)return;
             FailureLocked=false;CurrentAttemptOutcome=AttemptOutcome.Continue;
             if(board==null||Home||editing)return;
 
@@ -38,12 +39,13 @@ namespace StairsCrowd.Runtime
 
             CurrentAttemptOutcome=AttemptFailure.Classify(board.Level,board.Current,attemptSeen);
             if(CurrentAttemptOutcome!=AttemptOutcome.NoLegalMoves&&CurrentAttemptOutcome!=AttemptOutcome.OnlyRepeatedMoves)return;
-            FailureLocked=true;CancelPropSelection();CancelViewPointer();selected=-1;
+            FailureLocked=true;if(DailyActive)DailyClock.Fail();CancelPropSelection();CancelViewPointer();selected=-1;
             if(scene!=null)scene.Highlight(board,-1);message="";
         }
 
         void RecordBuiltInVictory()
         {
+            if(DailyActive){if(board!=null&&board.Solved)WinDaily();return;}
             if(board!=null&&board.Solved&&CampaignProgress.IsBuiltInCompletion(customPlaying,levelIndex,builtInCount))CampaignProgress.RecordCompletion(levelIndex,builtInCount);
         }
 
@@ -53,7 +55,7 @@ namespace StairsCrowd.Runtime
             float panelW=Mathf.Min(w-48,430),left=(w-panelW)/2,top=h*.34f,panelH=216;Round(new Rect(left,top+6,panelW,panelH),22,new Color(.11f,.17f,.18f,.28f));Round(new Rect(left,top,panelW,panelH),22,UiPaper);
             GUI.Label(new Rect(left+30,top+24,panelW-60,42),FailureTitle,Style(28,FontStyle.Bold,TextAnchor.MiddleCenter));
             GUI.Label(new Rect(left+30,top+76,panelW-60,28),FailureLevelText,Style(15,FontStyle.Bold,TextAnchor.MiddleCenter));
-            float bw=(panelW-76)/2;if(RoundButton(new Rect(left+26,top+132,bw,52),FailureRetry,new Color(.78f,.82f,.75f)))ResetLevel();
+            float bw=(panelW-76)/2;if(RoundButton(new Rect(left+26,top+132,bw,52),DailyActive&&!DailyCanRetry?"返回日历":FailureRetry,new Color(.78f,.82f,.75f)))ResetLevel();
             if(RoundButton(new Rect(left+50+bw,top+132,bw,52),FailureHome,new Color(.88f,.68f,.62f)))ReturnHome();
         }
     }

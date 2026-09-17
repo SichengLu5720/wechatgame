@@ -7,7 +7,7 @@ namespace StairsCrowd.Runtime
     {
         float tutorialExit=-1;
         Vector3 tutorialOrigin;
-        public bool IsTutorial => !customPlaying&&CampaignRepository.IsTutorial(board?.Level);
+        public bool IsTutorial => !DailyActive&&!customPlaying&&CampaignRepository.IsTutorial(board?.Level);
         public bool TutorialExiting => tutorialExit>=0;
         public bool SeamlessTutorial => IsTutorial&&levelIndex<3&&!Home&&!editing;
         void CancelTutorialExit()

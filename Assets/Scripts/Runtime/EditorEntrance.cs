@@ -6,7 +6,7 @@ namespace StairsCrowd.Runtime
     {
         void TickEditorEntrance()
         {
-            if(!Home||editing||board==null)return;
+            if(!Home||DailyCalendarOpen||editing||board==null)return;
 #if UNITY_EDITOR || UNITY_STANDALONE
             if((Input.GetKey(KeyCode.LeftControl)||Input.GetKey(KeyCode.RightControl))&&(Input.GetKey(KeyCode.LeftShift)||Input.GetKey(KeyCode.RightShift))&&Input.GetKeyDown(KeyCode.E))OpenEditor();
 #endif

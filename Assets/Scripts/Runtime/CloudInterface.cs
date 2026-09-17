@@ -14,7 +14,7 @@ namespace StairsCrowd.Runtime
         static readonly string[] MechanismRules={"深色人群只隐藏颜色。移走最外排后，下一排立即揭晓。","每完成一个集结点，数字减一。归零后，这里的平台才能通行。","站在这里的人无法搬出。集满 16 个同色人，解除束缚。","任何颜色均可停留。只有指定颜色集满 16 人才能完成。"};
         void ConfigureIntro()
         {
-            DisposeIntroPreview();introKinds.Clear();introPage=0;if(Home||board.Level.nodes.Length==0||IsTutorial||(!customPlaying&&levelIndex>0))return;
+            DisposeIntroPreview();introKinds.Clear();introPage=0;if(DailyActive||Home||board.Level.nodes.Length==0||IsTutorial||(!customPlaying&&levelIndex>0))return;
             if(board.Level.groups.Any(g=>g.hidden)||board.Level.nodes.Any(n=>n.curtain))introKinds.Add(0);
             if(board.Level.nodes.Any(n=>n.unlockAfter>0))introKinds.Add(1);
             if(board.Level.nodes.Any(n=>n.sticky))introKinds.Add(2);
@@ -55,17 +55,21 @@ namespace StairsCrowd.Runtime
         {
             if(board==null)return;InitStyles();drawingModal=false;GUI.skin.font=font;
             float scale=Mathf.Min(Screen.width/600f,Screen.height/900f),w=Screen.width/scale,h=Screen.height/scale;GUI.matrix=Matrix4x4.Scale(Vector3.one*scale);
+            if(DailyCalendarOpen){DrawDailyCalendar(w,h);GUI.matrix=Matrix4x4.identity;return;}
+            if(DailyActive&&DailyClock.Result==DailyResult.Won&&!Busy){DrawDailyCalendar(w,h,true);GUI.matrix=Matrix4x4.identity;return;}
             if(settingsOpen){DrawSettings(w,h);GUI.matrix=Matrix4x4.identity;return;}
             if(editing){DrawEditor(w,h);GUI.matrix=Matrix4x4.identity;return;}
             if(Home){
                 DrawHomeEditorButton(scale);SettingsGear(w,Mathf.Max(64,(Screen.height-Screen.safeArea.yMax)/scale+12));
                 if(startHero){float heroW=Mathf.Min(w-56,320),heroH=heroW*startHero.height/startHero.width,maxH=h*.18f;if(heroH>maxH){heroH=maxH;heroW=heroH*startHero.width/startHero.height;}GUI.DrawTexture(new Rect((w-heroW)/2,h*.025f,heroW,heroH),startHero,ScaleMode.ScaleToFit,true);}
-                if(Button(new Rect(w/2-110,h*.82f,220,52),"继续第 "+(levelIndex+1)+" 关",true,new Color(.68f,.78f,.69f)))StartGame();
+                float bottom=Mathf.Max(20,Screen.safeArea.y/scale+16),dailyY=h-bottom-52,adventureY=dailyY-64;
+                if(Button(new Rect(w/2-110,adventureY,220,52),"继续第 "+(levelIndex+1)+" 关",true,new Color(.68f,.78f,.69f)))StartGame();
+                if(Button(new Rect(w/2-110,dailyY,220,52),"每日挑战",true,new Color(.88f,.68f,.62f)))OpenDailyCalendar();
                 GUI.matrix=Matrix4x4.identity;return;
             }
             DrawPropHUD(w,h);
             DrawTutorialHint(w,h);
-            if(board.Solved&&!Busy&&!IntroVisible&&!SeamlessTutorial){Fill(new Rect(w/2-200,h*.36f,400,180),new Color(.96f,.93f,.85f));GUI.Label(new Rect(w/2-170,h*.36f+20,340,45),"集合完成",title);GUI.Label(new Rect(w/2-170,h*.36f+68,340,30),"用了 "+board.Moves+" 步",body);
+            if(!DailyActive&&board.Solved&&!Busy&&!IntroVisible&&!SeamlessTutorial){Fill(new Rect(w/2-200,h*.36f,400,180),new Color(.96f,.93f,.85f));GUI.Label(new Rect(w/2-170,h*.36f+20,340,45),"集合完成",title);GUI.Label(new Rect(w/2-170,h*.36f+68,340,30),"用了 "+board.Moves+" 步",body);
                 string action=customPlaying?"返回编辑":levelIndex+1<builtInCount?"下一关":"再次挑战";if(Button(new Rect(w/2-170,h*.36f+117,340,44),action,true,new Color(.68f,.8f,.7f))){if(customPlaying)OpenEditor();else LoadLevel(Mathf.Min(levelIndex+1,builtInCount-1));}}
             DrawFailurePanel(w,h);
             if(IntroVisible){
