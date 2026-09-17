@@ -20,7 +20,6 @@ namespace StairsCrowd.Runtime
             for(int i=0;i<count;i++){
                 var p=previous.pool[i];p.SetSelected(false);p.root.gameObject.SetActive(false);
                 p.root.SetParent(root.transform,false);p.presentationLift=BridgeLift;
-                p.walkGround=space;p.remainingDistance=float.PositiveInfinity;p.waterBird.Reset();
                 p.selectionRing.GetComponent<MeshFilter>().sharedMesh=selectionMesh;
                 p.selectionRing.GetComponent<Renderer>().sharedMaterial=selectionInk;
                 foreach(var r in p.root.GetComponentsInChildren<Renderer>(true))r.SetPropertyBlock(null);

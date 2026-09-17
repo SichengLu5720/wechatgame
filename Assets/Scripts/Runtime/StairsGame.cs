@@ -11,7 +11,7 @@ namespace StairsCrowd.Runtime
         public string message="";public InteractionFeedback Feedback {get;private set;}bool[] completedFeedback;
         readonly System.Collections.Generic.List<float> arrivalTimes=new System.Collections.Generic.List<float>();
         Font font;bool ownsFont;GUIStyle title,body,small,button;Texture2D white,startHero;
-        public bool Home {get;private set;}public bool IsAssembling{get{return assembly!=null||reveal<.22f;}} public double LastMoveMilliseconds{get;private set;}public double LastPlanningMilliseconds{get;private set;}public double LastCompositionMilliseconds{get;private set;} public bool LastMoveCached{get;private set;} AssemblySequence assembly;float reveal=1;bool drawingModal; readonly System.Collections.Generic.Dictionary<int,WalkSpace> spaces=new System.Collections.Generic.Dictionary<int,WalkSpace>(); int lastWidth,lastHeight;bool chooseLevel;public bool Busy{get{return TutorialExiting||PreparingMove||motion!=null||IsAssembling||(scene!=null&&(!scene.PresentationSettled||scene.HasReveal||scene.HasRetreat||scene.HasAddition));}}
+        public bool Home {get;private set;}public bool IsAssembling{get{return assembly!=null||reveal<.22f;}} public double LastMoveMilliseconds{get;private set;}public double LastPlanningMilliseconds{get;private set;}public double LastCompositionMilliseconds{get;private set;} public bool LastMoveCached{get;private set;} AssemblySequence assembly;float reveal=1;bool drawingModal; readonly System.Collections.Generic.Dictionary<int,WalkSpace> spaces=new System.Collections.Generic.Dictionary<int,WalkSpace>(); int lastWidth,lastHeight;bool chooseLevel;public bool Busy{get{return TutorialExiting||PreparingMove||motion!=null||IsAssembling||(scene!=null&&(scene.HasReveal||scene.HasRetreat||scene.HasAddition));}}
         void InitializeGame()
         {
             var preview=GameObject.Find("Editor Preview");if(preview)DestroyImmediate(preview);Application.targetFrameRate=60;Application.runInBackground=true;
@@ -119,11 +119,11 @@ namespace StairsCrowd.Runtime
                 if(completedFeedback[n]||!Rules.Complete(board.Level,board.Current,n))continue;bool arrived=true;
                 for(int row=0;row<board.Current.queues[n].Count&&arrived;row++)for(int member=0;member<Rules.MembersPerGroup;member++){
                     int id=board.Current.queues[n][row]*Rules.MembersPerGroup+member;var track=motion==null?null:motion.Track(id);
-                    if((track!=null&&clock<track.End-.0001f)||!scene.people[id].PresentationSettled||Vector3.Distance(scene.people[id].root.position,space.SeatFor(board.Current,n,row,member))>.005f){arrived=false;break;}
+                    if((track!=null&&clock<track.End-.0001f)||Vector3.Distance(scene.people[id].root.position,space.SeatFor(board.Current,n,row,member))>.005f){arrived=false;break;}
                 }
                 if(arrived&&SafeToRetreat(n)){completedFeedback[n]=true;Feedback.Complete();if(islandAudio)islandAudio.Play(true);scene.StartRetreat(n);}
             }
-            if(board.Solved&&motion==null&&scene.PresentationSettled&&!PreparingMove&&Rules.Completed(board.Level,board.Current)==board.Level.GoalCount)scene.StartFinalRetreat();
+            if(board.Solved&&motion==null&&!PreparingMove&&Rules.Completed(board.Level,board.Current)==board.Level.GoalCount)scene.StartFinalRetreat();
         }
         void Awake(){WeChatPlatform.BackgroundChanged+=DailyPlatformBackground;WeChatPlatform.Initialize(InitializeGame);}
         void Update()
@@ -143,19 +143,17 @@ namespace StairsCrowd.Runtime
             if(assembly!=null){if(!Home)scene.PreparePresentation(board.Current,2);assembly.Advance(delta);if(assembly.Complete&&(Home||scene.PresentationPrepared)){assembly=null;if(Home){reveal=1;return;}scene.Populate(board.Current);reveal=0;foreach(var p in scene.people)p.root.localScale=Vector3.one*.001f;}return;}
             if(reveal<.22f){reveal=Mathf.Min(.22f,reveal+Mathf.Max(0,delta));float scale=Mathf.SmoothStep(.001f,1,reveal/.22f);foreach(var p in scene.people)p.root.localScale=Vector3.one*scale;return;}
             if(Home||editing||IntroVisible)return;
-            if(motion==null){scene.TickWalks(delta);Feedback.Walk(delta,false);CheckCompletionFeedback();scene.TickWorld(board.Current,delta);PrepareNextScene();return;}clock=Mathf.Min(clock+Mathf.Max(0,delta),motion.duration);
+            if(motion==null){Feedback.Walk(delta,false);CheckCompletionFeedback();scene.TickWorld(board.Current,delta);PrepareNextScene();return;}clock=Mathf.Min(clock+Mathf.Max(0,delta),motion.duration);
             bool walking=false;foreach(var track in motion.tracks){int id=track.actor;
                 if(clock<track.start||clock>=track.End&&clock-delta>=track.End)continue;
                 if(scene.IsRetiring(scene.people[id].tag.node))continue;var p=track.PlaybackPosition(clock);var previous=scene.people[id].root.position;
-                scene.people[id].remainingDistance=track.RemainingDistance(clock);
-                if(p.x==previous.x&&p.z==previous.z){scene.people[id].Pose(p,Vector3.zero,0,false);continue;}
+                if(p.x==previous.x&&p.z==previous.z){scene.people[id].Pose(previous,Vector3.zero,0,false);continue;}
                 var direction=Vector3.ProjectOnPlane(p-previous,Vector3.up);
                 if(clock<track.End&&direction.sqrMagnitude>.000001f)walking=true;
                 scene.people[id].Pose(p,direction,clock*15*FastMovement.SpeedMultiplier+id,clock<track.End&&direction.sqrMagnitude>.000001f);
             }
 
-            if(clock>=motion.duration){motion=null;for(int n=0;n<board.Current.queues.Length;n++)foreach(int group in board.Current.queues[n])for(int member=0;member<Rules.MembersPerGroup;member++){int id=group*Rules.MembersPerGroup+member;scene.people[id].remainingDistance=0;scene.people[id].Pose(space.SeatFor(board.Current,n,board.Current.queues[n].IndexOf(group),member),space.Facing(n),0,false);}scene.RefreshPeople(board.Current);scene.Highlight(board,selected);message="";}
-            scene.TickWalks(delta);
+            if(clock>=motion.duration){motion=null;for(int n=0;n<board.Current.queues.Length;n++)foreach(int group in board.Current.queues[n])for(int member=0;member<Rules.MembersPerGroup;member++){int id=group*Rules.MembersPerGroup+member;scene.people[id].waterBird.Reset();scene.people[id].Pose(space.SeatFor(board.Current,n,board.Current.queues[n].IndexOf(group),member),space.Facing(n),0,false);}scene.RefreshPeople(board.Current);scene.Highlight(board,selected);message="";}
             int completions=Feedback.CompletionCount;CheckCompletionFeedback();
             bool arrived=false;for(int i=arrivalTimes.Count-1;i>=0;i--)if(clock>=arrivalTimes[i]-.0001f){arrived=true;arrivalTimes.RemoveAt(i);}
             if(arrived&&Feedback.CompletionCount==completions)Feedback.Arrive();
