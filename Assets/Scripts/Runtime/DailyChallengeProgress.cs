@@ -21,7 +21,7 @@ namespace StairsCrowd.Runtime
         public static Catalog Pool => pool??(pool=JsonUtility.FromJson<Catalog>(Resources.Load<TextAsset>("daily-v1").text));
         // Version 1 mapping must not depend on GetHashCode, timezone offsets or mutable campaign order.
         public static int Index(DateTime day,int count) => (int)((day.Date.Ticks/TimeSpan.TicksPerDay)%count);
-        public static LevelSpec ForDate(DateTime date) => LevelShare.Copy(Pool.levels[Index(date,Pool.levels.Length)]);
+        public static LevelSpec ForDate(DateTime date) => LevelPresentation.Apply(LevelShare.Copy(Pool.levels[Index(date,Pool.levels.Length)]));
         public static string NavigationPath(LevelSpec level) => "daily-navigation/"+level.provenance.id;
     }
 }

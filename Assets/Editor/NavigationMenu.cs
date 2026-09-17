@@ -10,19 +10,20 @@ public static class NavigationMenu
     public static void Bake()
     {
         var catalog=JsonUtility.FromJson<Catalog>(Resources.Load<TextAsset>("levels").text);
-        Directory.CreateDirectory("Assets/Resources/navigation");
-        for(int i=0;i<catalog.levels.Length;i++)File.WriteAllBytes("Assets/Resources/navigation/level-"+i+".bytes",new WalkSpace(catalog.levels[i]).Bake());
-        AssetDatabase.Refresh();Debug.Log("关卡通行数据已更新。");
+        Directory.CreateDirectory("artifacts/navigation/legacy");
+        for(int i=0;i<catalog.levels.Length;i++)File.WriteAllBytes("artifacts/navigation/legacy/level-"+i+".bytes",NavigationFactory.ForOfflineValidation(catalog.levels[i]).Bake());
+        Debug.Log("离线关卡通行缓存已更新；正式玩法按需生成，不携带密集缓存。");
     }
     [MenuItem("群岛/更新关卡通行数据",true)]
     public static bool CanBake(){return !EditorApplication.isPlayingOrWillChangePlaymode;}
     public static void BakeAllExisting()
     {
         try {
-            Bake();var campaign=JsonUtility.FromJson<Catalog>(Resources.Load<TextAsset>("campaign-v1").text);
-            var done=new System.Collections.Generic.HashSet<string>();
-            foreach(var level in campaign.levels)if(done.Add(level.provenance.template))File.WriteAllBytes("Assets/Resources/campaign-navigation/"+level.provenance.template+".bytes",new WalkSpace(level).Bake());
-            AssetDatabase.Refresh();EditorApplication.Exit(0);
+            foreach(var item in NavigationDataVerification.Levels()){
+                Directory.CreateDirectory("artifacts/navigation/all");
+                File.WriteAllBytes("artifacts/navigation/all/"+item.Key+".bytes",NavigationFactory.ForOfflineValidation(item.Value).Bake());
+            }
+            EditorApplication.Exit(0);
         }catch(System.Exception e){Debug.LogException(e);EditorApplication.Exit(1);}
     }
 }

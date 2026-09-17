@@ -10,15 +10,19 @@ namespace StairsCrowd.Runtime
     public sealed class HiddenArtVerification : MonoBehaviour
     {
         public static bool Active {get;private set;}
+        static HiddenArtVerification playbackOwner;
         StairsGame game;string output;
+        void ReleasePlayback(){if(playbackOwner==this){playbackOwner=null;Active=false;}}
+        void OnDisable(){StopAllCoroutines();ReleasePlayback();}
+        void OnDestroy(){StopAllCoroutines();ReleasePlayback();}
         static void Require(bool ok,string reason){if(!ok)throw new Exception("Hidden art: "+reason);}
-        void Ready(){int i=0;while(game.Busy&&i++<300)game.Advance(.025f);Require(!game.Busy,"settle timeout");}
+        void Ready(){int i=0,limit=Mathf.CeilToInt(((game.motion==null?0:game.motion.duration-game.clock)+8)/.025f);while(game.Busy&&i++<limit)game.Advance(.025f);Require(!game.Busy,"settle timeout");}
         int Check()
         {
             int hidden=0;Mesh shared=null;Material material=null;
             for(int i=0;i<game.scene.people.Length;i++){
                 var p=game.scene.people[i];bool concealed=!game.board.Current.revealed[i/4]&&!Rules.Complete(game.board.Level,game.board.Current,p.tag.node);
-                Require(p.visual.Find("Sky character").gameObject.activeSelf==!concealed,"ivory or colored model visible in hidden state");
+                Require(p.ModelParent.Find("Sky character").gameObject.activeSelf==!concealed,"ivory or colored model visible in hidden state");
                 Require((p.hiddenCharacter&&p.hiddenCharacter.activeSelf)==concealed,"independent hidden model state");
                 if(!concealed)continue;hidden++;
                 var filter=p.hiddenCharacter.GetComponent<MeshFilter>();var renderer=p.hiddenCharacter.GetComponent<MeshRenderer>();
@@ -44,7 +48,26 @@ namespace StairsCrowd.Runtime
         }
         IEnumerator Start()
         {
-            Active=true;game=GetComponent<StairsGame>();output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../../../artifacts/sky-v7.13-hidden"));Directory.CreateDirectory(output);
+            Active=true;playbackOwner=this;var run=Run();
+            try{
+                while(true){
+                    bool more=false;object next=null;Exception failure=null;
+                    try{more=run.MoveNext();if(more)next=run.Current;}catch(Exception e){failure=e;}
+                    if(failure!=null){
+                        // A failed diagnostic must not strand a selectable board
+                        // with its ordinary animation clock permanently paused.
+                        ReleasePlayback();Debug.LogException(failure);
+                        if(Array.IndexOf(Environment.GetCommandLineArgs(),"-hiddenarttest")>=0)Application.Quit(1);
+                        yield break;
+                    }
+                    if(!more)yield break;
+                    yield return next;
+                }
+            }finally{(run as IDisposable)?.Dispose();ReleasePlayback();}
+        }
+        IEnumerator Run()
+        {
+            game=GetComponent<StairsGame>();output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../../../artifacts/sky-v7.13-hidden"));Directory.CreateDirectory(output);
             Screen.SetResolution(540,960,FullScreenMode.Windowed);yield return null;yield return null;
             game.LoadLevel(7);Ready();Require(!game.IntroVisible,"removed hints returned");int initial=Check();Require(initial>0,"no hidden test population");
             RefinedRuntimeVerification.Check(game);
@@ -80,7 +103,7 @@ namespace StairsCrowd.Runtime
             foreach(var a in game.board.Level.solution){Require(game.RequestMove(a.a,a.b),"solution");Ready();Check();}
             Require(game.board.Solved&&Check()==0,"finished level retains hidden actors");
             File.WriteAllText(Path.Combine(output,"hidden-art-check.json"),"{\"passed\":true,\"independentModel\":true,\"revealUndoReset\":true,\"sharedMeshMaterial\":true,\"renderersPerHiddenActor\":1,\"vertices\":"+mesh.vertexCount+",\"triangles\":"+mesh.triangles.Length/3+",\"meshResourceBytes\":"+UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(mesh)+",\"wechatDeviceTested\":false}");
-            Active=false;Application.Quit(0);
+            ReleasePlayback();Application.Quit(0);
         }
     }
 }

@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace StairsCrowd.Runtime
 {
-    public static class WeChatPlatform
+    public static partial class WeChatPlatform
     {
         public static event Action<bool> BackgroundChanged;
-        static void NotifyBackground(bool hidden){BackgroundChanged?.Invoke(hidden);}
+        static void NotifyBackground(bool hidden){if(!hidden)RefreshDisplay();BackgroundChanged?.Invoke(hidden);}
         public static void CopyText(string text,Action done,Action<string> fail)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR && WECHAT_MINIGAME
@@ -38,12 +38,13 @@ namespace StairsCrowd.Runtime
                 Debug.Log("WeChat SDK initialized: " + code);
                 WeChatWASM.WX.OnHide(_=>NotifyBackground(true));
                 WeChatWASM.WX.OnShow(_=>NotifyBackground(false));
+                WeChatWASM.WX.OnWindowResize(_=>RefreshDisplay());
                 try{
                     var info=WeChatWASM.WX.GetWindowInfo();
                     if(info.pixelRatio>2)WeChatWASM.WX.SetDevicePixelRatio(2);
                     WeChatWASM.WX.SetPreferredFramesPerSecond(60);
                 }catch(Exception error){Debug.LogWarning("Mobile display settings: "+error.Message);}
-                ready();
+                RefreshDisplay();ready();
             });
 #else
             ready();

@@ -46,7 +46,10 @@ namespace StairsCrowd.Runtime
         void RecordBuiltInVictory()
         {
             if(DailyActive){if(board!=null&&board.Solved)WinDaily();return;}
-            if(board!=null&&board.Solved&&CampaignProgress.IsBuiltInCompletion(customPlaying,levelIndex,builtInCount))CampaignProgress.RecordCompletion(levelIndex,builtInCount);
+            if(board!=null&&board.Solved&&CampaignProgress.IsBuiltInCompletion(customPlaying,levelIndex,builtInCount)){
+                bool improved=FriendLeaderboardProgress.RecordCompletion(levelIndex,CampaignProgress.CurrentIndex(builtInCount),builtInCount);
+                CampaignProgress.RecordCompletion(levelIndex,builtInCount);if(improved)SyncLeaderboard();
+            }
         }
 
         void DrawFailurePanel(float w,float h)

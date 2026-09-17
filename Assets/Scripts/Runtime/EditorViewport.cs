@@ -26,7 +26,7 @@ namespace StairsCrowd.Runtime
             if(!editing||draft==null)return;SetEditorViewport();
             var position=view.transform.position;var rotation=view.transform.rotation;float size=view.orthographicSize;
             if(editorScene!=null)editorScene.Dispose();
-            editorScene=new CrowdScene(new WalkSpace(draft,null,true),view);editorScene.KeepOrbitInFrame=false;
+            editorScene=new CrowdScene(NavigationFactory.ForDraft(draft),view);editorScene.KeepOrbitInFrame=false;
             var state=Rules.Initial(draft);state.revealed=draft.groups.Select(g=>!g.hidden).ToArray();editorScene.Populate(state);
             if(!editorFitRequested){view.transform.SetPositionAndRotation(position,rotation);view.orthographicSize=size;}
             editorScene.FaceClouds();editorFitRequested=false;editorPreviewDirty=false;editorPreviewTime=Time.unscaledTime;Physics.SyncTransforms();
@@ -82,7 +82,7 @@ namespace StairsCrowd.Runtime
             if(ev.type==EventType.MouseDrag&&dragNode!=-1){
                 if(dragNode==-3){if(UserRotationEnabled)editorScene.OrbitView(ev.delta.x/rect.width*180);}
                 else if(dragNode==-2){float scale=Mathf.Min(Screen.width/600f,Screen.height/900f),units=view.orthographicSize*2/view.pixelHeight;view.transform.position+=(-view.transform.right*ev.delta.x+view.transform.up*ev.delta.y)*scale*units;}
-                else{Vector3 point;var node=draft.nodes[dragNode];if(EditorPlanePoint(ev.mousePosition,WalkSpace.WorldHeight(node.y),out point)){point+=editorDragOffset;node.x=point.x/1.4f;node.z=-point.z/1.96f;draft.solution=new EdgeSpec[0];editorPreviewDirty=true;editorDragChanged=true;propertyNode=-2;}}
+                else{Vector3 point;var node=draft.nodes[dragNode];if(EditorPlanePoint(ev.mousePosition,WalkSpace.WorldHeight(node.y),out point)){point+=editorDragOffset;var local=WalkGeometryConfig.Default.WorldToLevel(point);node.x=local.x;node.z=local.z;draft.solution=new EdgeSpec[0];editorPreviewDirty=true;editorDragChanged=true;propertyNode=-2;}}
                 ev.Use();
             }
             if(ev.rawType==EventType.MouseUp&&dragNode!=-1){if(editorDragChanged&&editorDragBefore!=null){editorHistory.Push(editorDragBefore);editorSnapshot=LevelShare.Copy(draft);}dragNode=-1;editorDragBefore=null;editorDragChanged=false;}

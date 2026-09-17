@@ -5,10 +5,10 @@ namespace StairsCrowd.Runtime
     {
         bool settingsOpen;int settingsConfirm,suppressInputThrough=-1;IslandAudio islandAudio;
         public bool SettingsOpen {get{return settingsOpen;}}
-        public bool InterfaceBlocksInput {get{return DailyCalendarOpen||(DailyActive&&DailyClock.Result!=StairsCrowd.Core.DailyResult.Pending)||FailureLocked||PreparingMove||settingsOpen||Time.frameCount<=suppressInputThrough;}}
+        public bool InterfaceBlocksInput {get{return FriendLeaderboardOpen||DailyCalendarOpen||(DailyActive&&DailyClock.Result!=StairsCrowd.Core.DailyResult.Pending)||FailureLocked||PreparingMove||settingsOpen||Time.frameCount<=suppressInputThrough;}}
         static readonly Color UiPaper=new Color(.96f,.93f,.86f),UiInk=new Color(.28f,.36f,.35f),UiSage=new Color(.43f,.61f,.54f),UiMuted=new Color(.70f,.72f,.66f);
         Texture2D uiCircle;
-        public void OpenSettings(){if(FailureLocked||DailyCalendarOpen||(DailyActive&&DailyClock.Result!=StairsCrowd.Core.DailyResult.Pending))return;PauseDaily(StairsCrowd.Core.DailyPause.Settings,true);if(FailureLocked)return;CancelPropSelection();CancelViewPointer();settingsConfirm=0;settingsOpen=true;if(Feedback!=null)Feedback.Cancel();}
+        public void OpenSettings(){if(FriendLeaderboardOpen||FailureLocked||DailyCalendarOpen||(DailyActive&&DailyClock.Result!=StairsCrowd.Core.DailyResult.Pending))return;PauseDaily(StairsCrowd.Core.DailyPause.Settings,true);if(FailureLocked)return;CancelPropSelection();CancelViewPointer();settingsConfirm=0;settingsOpen=true;if(Feedback!=null)Feedback.Cancel();}
         public void CloseSettings(){PauseDaily(StairsCrowd.Core.DailyPause.Settings,false);settingsOpen=false;settingsConfirm=0;CancelViewPointer();suppressInputThrough=Time.frameCount+1;}
         void Circle(Rect rect,Color color)
         {
@@ -30,7 +30,7 @@ namespace StairsCrowd.Runtime
             if(kind==6){Stroke(c+new Vector2(-5,11)*s,c+new Vector2(-5,-14)*s,3*s,color);Stroke(c+new Vector2(-5,-14)*s,c+new Vector2(14,-18)*s,3*s,color);Stroke(c+new Vector2(14,-18)*s,c+new Vector2(14,7)*s,3*s,color);Circle(new Rect(c.x-17*s,c.y+5*s,13*s,10*s),color);Circle(new Rect(c.x+2*s,c.y+2*s,13*s,10*s),color);}
         }
         bool RoundButton(Rect r,string text,Color color){Round(new Rect(r.x,r.y+3,r.width,r.height),14,new Color(.25f,.3f,.25f,.13f));Round(r,14,color);bool hit=GUI.Button(r,GUIContent.none,GUIStyle.none);GUI.Label(r,text,button);return hit;}
-        void SettingsGear(float w,float top){var r=new Rect(w-76,top,52,52);Circle(new Rect(r.x,r.y+3,r.width,r.height),new Color(.2f,.3f,.25f,.12f));Circle(r,new Color(.16f,.23f,.29f));Icon(new Rect(r.x+9,r.y+9,34,34),3,UiPaper);if(!FailureLocked&&GUI.Button(r,GUIContent.none,GUIStyle.none))OpenSettings();}
+        void SettingsGear(float w,float top){var r=GameplayLayout.Current.Gear;Circle(new Rect(r.x,r.y+3,r.width,r.height),new Color(.2f,.3f,.25f,.12f));Circle(r,new Color(.16f,.23f,.29f));Icon(new Rect(r.x+9,r.y+9,34,34),3,UiPaper);if(!FailureLocked&&GUI.Button(r,GUIContent.none,GUIStyle.none))OpenSettings();}
         void SettingRow(Rect r,string label,int icon,bool value,System.Action<bool> change)
         {
             Icon(new Rect(r.x+20,r.y+20,40,40),icon,UiInk);GUI.Label(new Rect(r.x+82,r.y,r.width-190,r.height),label,Style(23,FontStyle.Bold));
@@ -39,7 +39,7 @@ namespace StairsCrowd.Runtime
         }
         void DrawSettings(float w,float h)
         {
-            Fill(new Rect(0,0,w,h),new Color(.93f,.90f,.83f));float top=Mathf.Max(30,(Screen.height-Screen.safeArea.yMax)/(Screen.width/w)+18);
+            Fill(new Rect(0,0,w,h),new Color(.93f,.90f,.83f));float top=GameplayLayout.Current.Gear.y;
             var back=new Rect(22,top,64,54);Arrow(new Vector2(67,top+27),new Vector2(39,top+27),UiInk);if(GUI.Button(back,GUIContent.none,GUIStyle.none))CloseSettings();
             GUI.Label(new Rect(94,top,w-120,54),"设置",Style(30,FontStyle.Bold));
             float cw=Mathf.Min(w-48,520),left=(w-cw)/2,y=top+94;
@@ -69,15 +69,14 @@ namespace StairsCrowd.Runtime
         void DrawPropHUD(float w,float h)
         {
             // Floating controls: no opaque footer or shared tray.
-            float scale=Screen.width/w,top=Mathf.Max(16,(Screen.height-Screen.safeArea.yMax)/scale+12),bottomInset=Mathf.Max(14,Screen.safeArea.y/scale+8);
-            Round(new Rect(w/2-91,top+3,182,54),18,new Color(.13f,.21f,.28f,.85f));GUI.Label(new Rect(w/2-86,top+3,172,54),DailyActive?"每日挑战  "+DailyTimeText:customPlaying?"自由关卡":"第 "+(levelIndex+1)+" 关",NightStyle(DailyActive?19:24,FontStyle.Bold,TextAnchor.MiddleCenter));SettingsGear(w,top+3);
-            GUI.Label(new Rect(24,top+12,100,32),"步数 "+board.Moves,NightStyle(17));
-            float y=h-bottomInset-112;
-            bool ready=PropReady();float cx=w/2;
+            var layout=GameplayLayout.Current;float top=layout.Gear.y;
+            Round(layout.Title,18,new Color(.13f,.21f,.28f,.85f));GUI.Label(layout.Title,DailyActive?"每日挑战  "+DailyTimeText:customPlaying?"自由关卡":"第 "+(levelIndex+1)+" 关",NightStyle(DailyActive?19:24,FontStyle.Bold,TextAnchor.MiddleCenter));SettingsGear(w,top);
+            float y=layout.Props.y;
+            bool ready=PropReady();float cx=layout.Safe.center.x;
             DrawPropButton(new Rect(cx-93,y,76,76),0,"撤销",UndoRemaining,ready&&PropSelection==0&&board.CanUndo&&UndoRemaining>0,()=>UseUndoProp());
             DrawPropButton(new Rect(cx+17,y,76,76),1,"洗混",ShuffleRemaining,ready&&ShuffleRemaining>0,()=>BeginPropSelection(1));
-            if(PropSelection!=0){GUI.Label(new Rect(24,top+72,w-48,42),"选择要洗混的平台",NightStyle(24,FontStyle.Bold,TextAnchor.MiddleCenter));if(RoundButton(new Rect(w/2-70,y-110,140,40),"取消",UiPaper))CancelPropSelection();}
-            if(!string.IsNullOrEmpty(message))GUI.Label(new Rect(24,y-54,w-48,40),message,NightStyle(16,FontStyle.Normal,TextAnchor.MiddleCenter));
+            if(PropSelection!=0){GUI.Label(layout.Hint,string.IsNullOrEmpty(message)?"选择要洗混的平台":message,NightStyle(16,FontStyle.Bold,TextAnchor.MiddleCenter));if(RoundButton(new Rect(w/2-70,y-56,140,40),"取消",UiPaper))CancelPropSelection();}
+            if(PropSelection==0&&!string.IsNullOrEmpty(message))GUI.Label(new Rect(24,y-54,w-48,40),message,NightStyle(16,FontStyle.Normal,TextAnchor.MiddleCenter));
         }
     }
 }

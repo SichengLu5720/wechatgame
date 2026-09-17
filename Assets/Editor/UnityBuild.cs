@@ -110,9 +110,9 @@ public static class UnityBuild
     }    public static void Release()
     {
         try {
-            Directory.CreateDirectory("artifacts");Directory.CreateDirectory("Assets/Resources/navigation");
+            Directory.CreateDirectory("artifacts/navigation/legacy");
             var catalog=JsonUtility.FromJson<Catalog>(Resources.Load<TextAsset>("levels").text);
-            for(int i=0;i<catalog.levels.Length;i++){var space=new WalkSpace(catalog.levels[i]);var bytes=space.Bake();File.WriteAllBytes("Assets/Resources/navigation/level-"+i+".bytes",bytes);var copy=new WalkSpace(catalog.levels[i],bytes);if(copy.GeometryHash()!=space.GeometryHash())throw new Exception("Navigation bake roundtrip failed");}
+            for(int i=0;i<catalog.levels.Length;i++){var space=NavigationFactory.ForOfflineValidation(catalog.levels[i]);var bytes=space.Bake();File.WriteAllBytes("artifacts/navigation/legacy/level-"+i+".bytes",bytes);var copy=NavigationFactory.ForOfflineValidation(catalog.levels[i],bytes);if(copy.CacheStatus!="Valid"||copy.GeometrySignature!=space.GeometrySignature)throw new Exception("Navigation bake roundtrip failed");}
             AssetDatabase.Refresh();VerifyShapes();VerifyAlternativesInternal(true);
         }catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}
     }

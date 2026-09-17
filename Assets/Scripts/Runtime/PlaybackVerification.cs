@@ -33,7 +33,7 @@ namespace StairsCrowd.Runtime
                     var a=actions[step];var watch=Stopwatch.StartNew();if(!game.RequestMove(a.a,a.b))throw new Exception("Request rejected "+level+":"+step+" "+game.message);report.requestMs.Add(watch.Elapsed.TotalMilliseconds);
                     var plan=game.motion;if(plan==null)throw new Exception("Request did not start in same call");
                     Check(plan);Benchmark(plan);
-                    int frames=0;while(game.motion!=null&&frames++<1000){game.Advance(.017f);CheckPeople();}if(game.motion!=null)throw new Exception("Motion timeout");report.moves++;
+                    int frames=0,frameLimit=Mathf.CeilToInt(plan.duration/.017f)+3;while(game.motion!=null&&frames++<frameLimit){game.Advance(.017f);CheckPeople();}if(game.motion!=null)throw new Exception("Motion timeout");report.moves++;
                     if(step==0){yield return new WaitForEndOfFrame();Capture("level-"+(level+1)+".png");}
                 }
                 if(!game.board.Solved)throw new Exception("Level not solved");report.levels++;

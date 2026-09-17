@@ -107,7 +107,7 @@ Last Updated: 2026-09-16
 - Main campaign source: `Assets/Resources/tutorial-v1.json`, `Assets/Resources/campaign-v1.json`
 - Legacy/fallback level source: `Assets/Resources/levels.json`
 - Campaign loading owner: `Assets/Scripts/Runtime/CampaignRepository.cs`
-- Navigation data: `Assets/Resources/campaign-navigation/`, `Assets/Resources/navigation/`
+- Navigation data: 运行时由关卡事实和统一几何配置轻量派生；密集导航缓存仅作为可选离线验证产物，不随正式 `Resources` 交付。旧缓存可恢复基线位于 `artifacts/task004/legacy-resource-caches/`。
 - Save-data owner: `GameSettings.cs` 和 `IslandEditor.cs` 使用 Unity `PlayerPrefs`
 - Runtime settings owner: `Assets/Scripts/Runtime/GameSettings.cs`
 
@@ -190,7 +190,7 @@ Not documented.
 
 - `StairsCrowd.Core` 保持可验证的规则、状态、求解与关卡模型；`StairsCrowd.Runtime` 负责 Unity 表现、输入和平台集成。
 - 玩家规则变更必须同步检查关卡数据、解法见证、移动规划、撤销/重置与运行时表现。
-- 关卡及导航数据应通过现有生成/验证入口更新，避免手工修改生成产物。
+- 关卡事实通过现有生成/验证入口更新；导航、楼梯与支撑面由统一几何描述派生，禁止手工同步重复缓存。可选密集缓存必须通过版本、确定性几何签名和负载校验，失效时安全重建。
 - 平台凭据与本机路径通过环境变量注入，不进入源文件、Task、Version 或日志。
 - 不为局部功能引入大型框架；优先沿用现有纯 C# 规则与 Unity 运行时结构。
 

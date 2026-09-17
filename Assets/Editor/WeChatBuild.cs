@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
 using WeChatWASM;
+using LitJson;
 
 public static class WeChatBuild
 {
@@ -69,6 +70,7 @@ public static class WeChatBuild
         string node=Environment.GetEnvironmentVariable("STAIRS_NODE_PATH");
         if(!string.IsNullOrEmpty(node))config.CompileOptions.CustomNodePath=node;
         config.SDKOptions.PreloadWXFont=false;
+        config.SDKOptions.UseFriendRelation=true;
         EditorUtility.SetDirty(config);
         var target=NamedBuildTarget.WebGL;
         var defines=PlayerSettings.GetScriptingDefineSymbols(target).Split(';').Where(s=>!string.IsNullOrWhiteSpace(s)).ToList();
@@ -113,10 +115,38 @@ public static class WeChatBuild
             string output="Builds/WeChat/minigame";
             foreach(string file in new[]{"game.js","game.json","project.config.json"})
                 if(!File.Exists(Path.Combine(output,file)))throw new Exception("Missing export: "+file);
+            DeployFriendLeaderboard(output);
             File.WriteAllText("artifacts/wechat/export.txt","Converted successfully. AppID and device verification are required before upload.\n");
             Debug.Log("WECHAT EXPORT PASSED");
             if(Application.isBatchMode)EditorApplication.Exit(0);
         }catch(Exception error){Debug.LogException(error);if(Application.isBatchMode)EditorApplication.Exit(1);else throw;}
+    }
+
+    // The SDK template is not a production leaderboard. Deploy only our two modules.
+    public static void DeployFriendLeaderboard(string output)
+    {
+        string root=Path.GetFullPath(output),destination=Path.GetFullPath(Path.Combine(root,"open-data"));
+        if(!destination.StartsWith(root+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))throw new Exception("Invalid open data output");
+        foreach(string file in new[]{"index.js","model.js"})if(!File.Exists(Path.Combine("Assets/WeChat/LeaderboardOpenData",file)))throw new Exception("Missing leaderboard module");
+        var game=JsonMapper.ToObject(File.ReadAllText(Path.Combine(root,"game.json")));
+        game["openDataContext"]="open-data";
+        if(game.ContainsKey("plugins")&&game["plugins"].ContainsKey("Layout"))game["plugins"].Remove("Layout");
+        if(Directory.Exists(destination))Directory.Delete(destination,true);
+        Directory.CreateDirectory(destination);
+        foreach(string file in new[]{"index.js","model.js"})File.Copy(Path.Combine("Assets/WeChat/LeaderboardOpenData",file),Path.Combine(destination,file));
+        File.WriteAllText(Path.Combine(root,"game.json"),game.ToJson());
+        VerifyFriendLeaderboardExport(root);
+    }
+
+    public static void VerifyFriendLeaderboardExport(string output)
+    {
+        var game=JsonMapper.ToObject(File.ReadAllText(Path.Combine(output,"game.json")));
+        if(!game.ContainsKey("openDataContext")||(string)game["openDataContext"]!="open-data")throw new Exception("Leaderboard context missing");
+        string directory=Path.Combine(output,"open-data");
+        var files=Directory.GetFiles(directory,"*",SearchOption.AllDirectories);
+        if(files.Length!=2||!File.Exists(Path.Combine(directory,"model.js"))||!File.Exists(Path.Combine(directory,"index.js")))throw new Exception("Unexpected open data payload");
+        foreach(string file in files){string source=File.ReadAllText(file);if(source.Contains("console.")||source.Contains("Math.random")||source.Contains("getGroupCloudStorage")||source.Contains("requirePlugin"))throw new Exception("SDK sample or private data logging found");}
+        Debug.Log("FRIEND LEADERBOARD OPEN DATA EXPORT PASSED");
     }
 
     public static void BuildCooperativeTest()

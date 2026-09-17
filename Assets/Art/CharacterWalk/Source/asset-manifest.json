@@ -1,0 +1,136 @@
+{
+  "taskId": "TASK-003",
+  "taskVersion": 1,
+  "assetId": "task003.pilgrim.shared-v1",
+  "status": "astra-source-candidate-awaiting-unity-and-human-art-review",
+  "artExchangePath": "D:\\群岛-harness\\art-source\\task-003-astra\\exports\\task-003-pilgrim-shared-v1.gltf",
+  "sha256": "0F98CAECDF438DF031E9200F45912231BCD6DF7BB77615C81D539F528D44F981",
+  "geometry": {
+    "vertices": 8833,
+    "triangles": 3212,
+    "primitives": 1,
+    "materials": 1,
+    "bindBounds": {
+      "min": [
+        -0.3627490909090909,
+        0,
+        -0.2673490909090909
+      ],
+      "max": [
+        0.3627490909090909,
+        1.3810000000000002,
+        0.27724909090909095
+      ],
+      "maxRadialXZ": 0.3627490909090909
+    },
+    "hardEdgeNormals": true,
+    "degenerateTriangles": 0,
+    "normalWindingErrors": 0
+  },
+  "rig": {
+    "nodes": [
+      "visual_root",
+      "pelvis",
+      "spine",
+      "cloak_core",
+      "neck",
+      "hood_shell",
+      "crown_inset",
+      "trim_front",
+      "leg_l",
+      "shin_l",
+      "foot_l",
+      "leg_r",
+      "shin_r",
+      "foot_r"
+    ],
+    "nodeCount": 14,
+    "deformingJoints": 13,
+    "maxInfluencesPerVertex": 1,
+    "footAnchorsWorldY": {
+      "foot_l": 5.551115123125783e-17,
+      "foot_r": 5.551115123125783e-17
+    },
+    "rootMotion": false
+  },
+  "animation": {
+    "clip": "walk_a_in_place_v1",
+    "durationSeconds": 1,
+    "fps": 30,
+    "samples": 31,
+    "leftContact": [
+      [
+        0,
+        0.1
+      ],
+      [
+        0.5,
+        0.6
+      ]
+    ],
+    "rightContact": [
+      [
+        0.25,
+        0.35
+      ],
+      [
+        0.75,
+        0.85
+      ]
+    ],
+    "cloakCoreScale": {
+      "x": [
+        1,
+        1
+      ],
+      "y": [
+        0.988,
+        1
+      ],
+      "z": [
+        1,
+        1
+      ]
+    },
+    "referenceMetersPerSecond": 1.25
+  },
+  "materialContract": {
+    "slots": 1,
+    "vertexColor": "COLOR_0.r=cloth mask; g=0; b=AO; a=1",
+    "runtimeProperties": [
+      "_ClothColor",
+      "_RevealTint",
+      "_PropDim"
+    ]
+  },
+  "coordinateContract": {
+    "source": "right-handed Y-up +Z forward",
+    "unityImport": "Mirror X and reverse winding once"
+  },
+  "sharedBufferBytes": 553556,
+  "gltfFileBytes": 748938,
+  "knownLimitations": [
+    "This source revision addresses r009 feedback and direct original-pixel comparisons; exact 1:1 matching remains unapproved. Silhouette overlap and numeric proportions are Test Proxies only. Camera settings were not changed.",
+    "Offline views are a faithful renderer of this exact source geometry, not proof of exact 1:1 concept reproduction. Unity import, four-view comparison and human approval remain required.",
+    "Foot contact markers are phase metadata; runtime distance/ground-aware foot placement must provide actual plant locking."
+  ],
+  "sourceRevision": "astra-r003",
+  "supersedesSha256": "83449A4D09CD2BB5377B18885BE861036F6012D895AD5F9A0ACECD891F6DE6F1",
+  "revisionChanges": [
+    "Calibrated against raw r003 four-view pixels, not conflicting estimated head-height targets; PM confirmed raw reference precedence.",
+    "Extended integral Z crown over the visible roof slope, chamfering its color boundary and connecting the back terminal; ivory front rim retained.",
+    "Lengthened pointed collar bib and shortened/lowered the diamond chain to reference pixel levels.",
+    "Retained rearward embedded side lozenges and compact feet after direct measurement supported their current proportions.",
+    "Retained simple restrained hem and gave the broad cloak pleats deeper continuous seams.",
+    "Added unchanged-camera four-view crops, uniform-scale alignment, 50 percent overlays, dual-color contours and measured proxies."
+  ],
+  "qaEvidence": [
+    "qa/geometry-check.json",
+    "qa/export-verification.json",
+    "qa/source-four-view.png",
+    "qa/source-camera.json",
+    "qa/source-measurements.json",
+    "qa/reference-comparison-board.png",
+    "qa/reference-alignment.json"
+  ]
+}

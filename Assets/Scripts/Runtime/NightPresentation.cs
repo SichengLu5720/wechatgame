@@ -8,7 +8,7 @@ namespace StairsCrowd.Runtime
 {
     public sealed partial class StairsGame
     {
-        static readonly Color NightBackground=new Color(.247f,.616f,.651f);
+        static readonly Color NightBackground=GameplayPresentation.Background;
         Camera nightBackdrop;public FixedTowerBackdrop TowerBackground {get;private set;}
         public int PropSelection {get;private set;}
         public bool FindingPropTargets {get;private set;}

@@ -26,7 +26,7 @@ namespace StairsCrowd.Runtime
                 foreach(var r in p.root.GetComponentsInChildren<Renderer>(true))r.SetPropertyBlock(null);
                 foreach(var r in p.colored)r.sharedMaterial=mystery;
                 p.ResetReveal();p.visual.localScale=Vector3.one;p.visual.localPosition=Vector3.zero;
-                pool[i]=p;previous.pool[i]=null;
+                ApplyPersonTuning(p);pool[i]=p;previous.pool[i]=null;
             }
             preparedPeople=count;ReusedPeople=count;
             previous.people=Array.Empty<PersonView>();
@@ -40,7 +40,7 @@ namespace StairsCrowd.Runtime
                 if(!state.revealed[preparedMasks/Rules.MembersPerGroup]&&!p.hiddenCharacter){
                     var prefab=Resources.Load<GameObject>("HiddenCharacter/HiddenCharacter");
                     if(!prefab)throw new InvalidOperationException("Missing hidden character prefab");
-                    p.hiddenCharacter=UnityEngine.Object.Instantiate(prefab,p.visual,false);
+                    p.hiddenCharacter=UnityEngine.Object.Instantiate(prefab,p.ModelParent,false);
                     p.hiddenCharacter.SetActive(false);
                 }
             }
@@ -70,8 +70,7 @@ namespace StairsCrowd.Runtime
             var timer=System.Diagnostics.Stopwatch.StartNew();
             if(preparedScene==null){
                 var level=catalog.levels[index];
-                var nav=Resources.Load<TextAsset>(CampaignRepository.NavigationPath(level,index));
-                var nextSpace=new WalkSpace(level,nav?nav.bytes:null,CampaignRepository.GeometryOnly(level));
+                var nextSpace=NavigationFactory.Create(level);
                 preparedScene=new CrowdScene(nextSpace,view,true);preparedIndex=index;
             }else if(preparedIndex!=index||preparedScene.space.Level!=catalog.levels[index]){DiscardPreparedScene();return;}
             // Each step builds one platform/link or batches one piece; budget is soft, not preemptive.

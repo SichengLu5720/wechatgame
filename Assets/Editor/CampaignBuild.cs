@@ -9,7 +9,7 @@ public static class CampaignBuild
 {
     public static void VerifyConcurrent()
     {
-        try{var catalog=CampaignRepository.Load();foreach(var l in catalog.levels){var space=new WalkSpace(l,Resources.Load<TextAsset>(CampaignRepository.NavigationPath(l,0)).bytes);var board=new Board(l);MotionPlan active=null;int step=0;foreach(var action in l.solution){try{var plan=MotionPlanner.Build(space,board.Current,Rules.Preview(l,board.Current,action.a,action.b));active=MotionComposer.Append(active,.05833333f,plan);board.TryMove(action.a,action.b);step++;}catch(Exception error){throw new Exception(l.provenance.id+" concurrent step="+step+" "+action.a+"->"+action.b,error);}}Debug.Log("CONCURRENT PASS "+l.provenance.id);}EditorApplication.Exit(0);}catch(Exception error){Debug.LogException(error);EditorApplication.Exit(1);}
+        try{var catalog=CampaignRepository.Load();foreach(var l in catalog.levels){var space=NavigationFactory.Create(l);var board=new Board(l);MotionPlan active=null;int step=0;foreach(var action in l.solution){try{var plan=MotionPlanner.Build(space,board.Current,Rules.Preview(l,board.Current,action.a,action.b));active=MotionComposer.Append(active,.05833333f,plan);board.TryMove(action.a,action.b);step++;}catch(Exception error){throw new Exception(l.provenance.id+" concurrent step="+step+" "+action.a+"->"+action.b,error);}}Debug.Log("CONCURRENT PASS "+l.provenance.id);}EditorApplication.Exit(0);}catch(Exception error){Debug.LogException(error);EditorApplication.Exit(1);}
     }
     public static void ValidateAndBake()
     {

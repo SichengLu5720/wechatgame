@@ -33,6 +33,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _CharacterShadeFloor: 0
     - _Detail: 0.65
     - _FogDepth: 7
     - _FogLevel: -2.5
@@ -42,7 +43,7 @@ Material:
     - _RevealTint: 1
     - _StoneDetail: 0
     m_Colors:
-    - _ClothColor: {r: 0.1882353, g: 0.2901961, b: 0.3137255, a: 1}
+    - _ClothColor: {r: 0.1254902, g: 0.1254902, b: 0.14117648, a: 1}
     - _FogColor: {r: 0.247, g: 0.616, b: 0.651, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

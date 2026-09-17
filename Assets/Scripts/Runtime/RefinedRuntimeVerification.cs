@@ -13,7 +13,7 @@ namespace StairsCrowd.Runtime
             if(!art.collectionPlatform||art.collectionPlatform==art.platform||art.collectionPlatform.bounds.max.y>.001f||Mathf.Abs(art.collectionPlatform.bounds.size.x-5.2f)>.001f)throw new Exception("Collection rim asset missing or has top pylons");
             for(int n=0;n<game.scene.nodeRoots.Length;n++){
                 if(game.space.Sides[n]!=4)continue;
-                var batch=game.scene.NodeRoot(n).Find("Architecture batch");if(!batch)throw new Exception("Platform architecture missing");
+                var batch=game.scene.NodeRoot(n).Find("Architecture batch");if(!batch)batch=game.scene.NodeRoot(n).Find("Platform tuning visual/Architecture batch");if(!batch)throw new Exception("Platform architecture missing");
                 var mesh=batch.GetComponent<MeshFilter>().sharedMesh;bool collection=!game.board.Level.nodes[n].transit;
                 if(mesh.triangles.Length!=(collection?art.collectionPlatform:art.platform).triangles.Length)throw new Exception("Wrong platform model connected");
                 if(!collection)continue;
@@ -24,10 +24,11 @@ namespace StairsCrowd.Runtime
             // Exclude the retained corner ornaments, and allow the central triangle-fan vertex.
             if(art.platform.vertices.Any(p=>Mathf.Abs(p.y+.001f)<.002f&&Mathf.Abs(p.x)<2.1f&&Mathf.Abs(p.z)<2.1f&&new Vector2(p.x,p.z).sqrMagnitude>.0001f))throw new Exception("Platform has interior slab joints");
             foreach(var person in game.scene.people){
-                var model=person.visual.Find("Sky character");if(!model||model.GetComponent<MeshFilter>().sharedMesh!=art.character||model.GetComponentsInChildren<Renderer>(true).Length!=1)throw new Exception("Wrong refined character mesh or renderer count");
+                if(game.scene.UsesCharacterWalk){if(person.walk==null||person.walk.Renderer.sharedMesh!=Resources.Load<CharacterWalkAsset>("CharacterWalk/Task003PilgrimCharacter").mesh)throw new Exception("Wrong shared walk mesh");continue;}
+                var model=person.ModelParent.Find("Sky character");if(!model||model.GetComponent<MeshFilter>().sharedMesh!=art.character||model.GetComponentsInChildren<Renderer>(true).Length!=1)throw new Exception("Wrong refined character mesh or renderer count");
             }
             foreach(var p in art.character.vertices)if(new Vector2(p.x,p.z).magnitude*1.1f>WalkSpace.ActorRadius||p.y*1.1f>CrowdScene.PersonHeight)throw new Exception("Refined actor exceeds gameplay envelope");
-            foreach(var p in game.scene.platforms)if(p.GetComponent<Collider>()==null||p.GetComponent<PlatformTag>()==null)throw new Exception("Platform click collider removed");
+            for(int n=0;n<game.scene.platforms.Length;n++){var surface=game.scene.NodeRoot(n).Find("Platform "+n);if(!surface||!surface.GetComponent<Collider>()||!surface.GetComponent<PlatformTag>()||surface.GetComponent<PlatformTag>().node!=n)throw new Exception("Platform click collider removed");}
             Debug.Log("CLEAN REFINED GAME ART PASS: stone texture retained, no slab joints, shared character mesh, actor envelope, click colliders");
         }
     }

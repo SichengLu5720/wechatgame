@@ -11,13 +11,42 @@ namespace StairsCrowd.Runtime
     {
         public int actor;internal int phase;public float start,duration;public Vector3[] points;public float[] times;
         public float End {get{return start+duration;}}
+        public float RemainingDistance(float clock)
+        {
+            float t=clock-start;if(t>=duration)return 0;
+            var from=Position(clock);float distance=0;
+            for(int i=1;i<points.Length;i++)if(times[i]>t){distance+=Vector3.ProjectOnPlane(points[i]-from,Vector3.up).magnitude;from=points[i];}
+            return distance;
+        }
         PlaybackFloor.Profile[] floors;
-        public void PrepareFloor(PlaybackFloor floor){floors=new PlaybackFloor.Profile[points.Length-1];for(int i=0;i<floors.Length;i++)floors[i]=floor.Segment(points[i],points[i+1]);}
+        WalkSpace playbackSpace;
+        public void PrepareFloor(PlaybackFloor floor,WalkSpace space=null){playbackSpace=space;floors=new PlaybackFloor.Profile[points.Length-1];for(int i=0;i<floors.Length;i++)floors[i]=floor.Segment(points[i],points[i+1]);}
         public Vector3 PlaybackPosition(float clock)
         {
             float t=clock-start;if(t<=0)return points[0];if(t>=duration)return points[points.Length-1];
             int lo=1,hi=times.Length-1;while(lo<hi){int mid=(lo+hi)/2;if(times[mid]<t)lo=mid+1;else hi=mid;}
-            float u=(t-times[lo-1])/Mathf.Max(.00001f,times[lo]-times[lo-1]);var p=Vector3.Lerp(points[lo-1],points[lo],u);p.y=floors[lo-1].Height(u)+WalkSpace.FootGap;return p;
+            float u=(t-times[lo-1])/Mathf.Max(.00001f,times[lo]-times[lo-1]);var p=Vector3.Lerp(points[lo-1],points[lo],u);var profile=floors[lo-1];
+            p.y=(playbackSpace!=null&&NearBoundary(profile,u)?ExactFloorHeight(p):profile.Height(u))+WalkSpace.FootGap;return p;
+        }
+        static bool NearBoundary(PlaybackFloor.Profile profile,float t)
+        {
+            // Analytic event times and interpolated float positions can fall on
+            // opposite sides of the same riser. Only these tiny windows need the
+            // exact height query; the ordinary playback path remains cached.
+            int lo=0,hi=profile.times.Length;while(lo<hi){int mid=(lo+hi)/2;if(profile.times[mid]<t)lo=mid+1;else hi=mid;}
+            const float epsilon=.00002f;
+            return lo<profile.times.Length&&Mathf.Abs(profile.times[lo]-t)<epsilon||lo>0&&Mathf.Abs(profile.times[lo-1]-t)<epsilon;
+        }
+        float ExactFloorHeight(Vector3 position)
+        {
+            var center=new Vector2(position.x,position.z);float highest=float.NegativeInfinity;
+            for(int sample=-1;sample<SurfaceCoverage.Footprint.Length;sample++){
+                var point=center+(sample<0?Vector2.zero:SurfaceCoverage.Footprint[sample]*(WalkSpace.ActorRadius+.012f));
+                for(int n=0;n<playbackSpace.Centers.Length;n++)if(playbackSpace.Inside(n,point))highest=Mathf.Max(highest,playbackSpace.Centers[n].y);
+                // Indexed access avoids GeometryArray's enumerator allocation.
+                for(int i=0;i<playbackSpace.Stairs.Length;i++){float height;if(playbackSpace.Stairs[i].Height(point,out height))highest=Mathf.Max(highest,height);}
+            }
+            return highest;
         }
         public Vector3 Position(float clock)
         {
@@ -36,7 +65,7 @@ namespace StairsCrowd.Runtime
         public int[] finalSlots;public Vector3[] initial,final;public List<ActorTrack> tracks=new List<ActorTrack>();public float duration;public Move move;
         ActorTrack[] indexed;int indexedCount=-1;
         void Index(){if(indexedCount==tracks.Count)return;indexed=new ActorTrack[initial.Length];foreach(var track in tracks)indexed[track.actor]=track;indexedCount=tracks.Count;}
-        public void PreparePlayback(WalkSpace space){Index();var floor=PlaybackFloor.For(space);foreach(var track in tracks)track.PrepareFloor(floor);}
+        public void PreparePlayback(WalkSpace space){Index();var floor=PlaybackFloor.For(space);foreach(var track in tracks)track.PrepareFloor(floor,space);}
         public Vector3 Position(int actor,float t){var track=Track(actor);return track==null?initial[actor]:track.Position(t);}
         public Vector3 SupportedPosition(WalkSpace space,int actor,float t){Vector3 p=Position(actor,t);float height;if(!space.FootHeight(new Vector2(p.x,p.z),out height))throw new Exception("Motion left walkable surface actor="+actor+" time="+t+" p="+p);p.y=height+WalkSpace.FootGap;return p;}
         public float MinimumClearance()

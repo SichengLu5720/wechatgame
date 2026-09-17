@@ -16,7 +16,14 @@ namespace StairsCrowd.Runtime
         public static void CheckDefinitions(string path)
         {
             var catalog=CampaignRepository.Load();var original=CampaignRepository.LoadOriginal();int moves=0,feet=0;
-            for(int i=10;i<20;i++)Require(JsonUtility.ToJson(catalog.levels[i])==JsonUtility.ToJson(original.levels[i]),"remaining campaign changed");
+            for(int i=10;i<20;i++){
+                var delivered=catalog.levels[i];var source=original.levels[i];
+                Require(JsonUtility.ToJson(delivered)==JsonUtility.ToJson(LevelPresentation.Apply(source)),"remaining campaign differs from delivered presentation");
+                Require(JsonUtility.ToJson(LevelPresentation.Apply(delivered))==JsonUtility.ToJson(delivered),"presentation must be idempotent");
+                var rulesOnly=LevelShare.Copy(delivered);Require(rulesOnly.nodes.Length==source.nodes.Length,"node identities changed");
+                for(int n=0;n<source.nodes.Length;n++){rulesOnly.nodes[n].x=source.nodes[n].x;rulesOnly.nodes[n].z=source.nodes[n].z;}
+                Require(JsonUtility.ToJson(rulesOnly)==JsonUtility.ToJson(source),"remaining campaign non-XZ facts changed");
+            }
             foreach(var level in catalog.levels.Take(10)){
                 level.Validate();Require(level.groups.GroupBy(g=>g.color).All(g=>g.Count()==4),"color total");
                 for(int n=0;n<level.nodes.Length;n++)if(!level.nodes[n].transit)Require(level.edges.Count(e=>e.a==n||e.b==n)==1,"collection exit count");
@@ -35,7 +42,7 @@ namespace StairsCrowd.Runtime
                 }
                 Require(board.Solved,level.name+" unsolved");board.Reset();Require(board.Moves==0&&!board.CanUndo,"reset");
             }
-            Directory.CreateDirectory(Path.GetDirectoryName(path));File.WriteAllText(path,"{\"passed\":true,\"tutorialLevels\":10,\"moves\":"+moves+",\"footSamples\":"+feet+",\"remainingCampaignUnchanged\":true}");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));File.WriteAllText(path,"{\"passed\":true,\"tutorialLevels\":10,\"moves\":"+moves+",\"footSamples\":"+feet+",\"remainingCampaignRulesUnchanged\":true,\"deliveredPresentationVerified\":true}");
         }
         void Tick(float delta=.025f)
         {

@@ -54,7 +54,7 @@ namespace StairsCrowd.Runtime
         }
         public void PlaceEditorNode(bool transit,Vector3 world)
         {
-            var nodes=draft.nodes.ToList();var added=CloudLevels.N(world.x/1.4f,WalkSpace.LevelHeight(world.y),-world.z/1.96f,transit);int index=nodes.Count;
+            var nodes=draft.nodes.ToList();var local=WalkGeometryConfig.Default.WorldToLevel(world);var added=CloudLevels.N(local.x,local.y,local.z,transit);int index=nodes.Count;
             if(index>0){int nearest=Enumerable.Range(0,index).OrderBy(i=>(WalkSpace.WorldCenter(nodes[i])-world).sqrMagnitude).First();draft.edges=draft.edges.Concat(new[]{CloudLevels.E(nearest,index)}).ToArray();}
             nodes.Add(added);draft.nodes=nodes.ToArray();editNode=index;propertyNode=-2;Changed();
         }

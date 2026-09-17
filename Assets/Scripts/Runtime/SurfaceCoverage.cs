@@ -17,7 +17,7 @@ namespace StairsCrowd.Runtime
             var d=new Vector2(s.Direction.x,s.Direction.z);var side=new Vector2(-d.y,d.x);var start=new Vector2(s.start.x,s.start.z);var end=new Vector2(s.end.x,s.end.z);
             return new SurfaceRegion{normals=new[]{d,-d,side,-side},offsets=new[]{Vector2.Dot(d,end),Vector2.Dot(-d,start),Vector2.Dot(side,start)+s.width/2,Vector2.Dot(-side,start)+s.width/2}};
         }
-        public static SurfaceRegion Polygon(Vector3[] vertices)
+        public static SurfaceRegion Polygon(GeometryArray<Vector3> vertices)
         {
             var result=new SurfaceRegion{normals=new Vector2[vertices.Length],offsets=new float[vertices.Length]};Vector2 center=Vector2.zero;foreach(var p in vertices)center+=new Vector2(p.x,p.z)/vertices.Length;
             for(int i=0;i<vertices.Length;i++){var a=new Vector2(vertices[i].x,vertices[i].z);var b=new Vector2(vertices[(i+1)%vertices.Length].x,vertices[(i+1)%vertices.Length].z);var d=b-a;var normal=new Vector2(-d.y,d.x).normalized;if(Vector2.Dot(normal,center-a)>0)normal=-normal;result.normals[i]=normal;result.offsets[i]=Vector2.Dot(normal,a);}return result;

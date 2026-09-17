@@ -19,7 +19,7 @@ public static class LocalArtBuild
         var camera=Camera.main;if(!camera){camera=new GameObject("Main Camera",typeof(Camera)).GetComponent<Camera>();camera.tag="MainCamera";}
         camera.backgroundColor=new Color(.9f,.85f,.8f);camera.clearFlags=CameraClearFlags.SolidColor;
         var level=JsonUtility.FromJson<Catalog>(Resources.Load<TextAsset>("levels").text).levels[0];
-        var preview=new CrowdScene(new WalkSpace(level,Resources.Load<TextAsset>("navigation/level-0").bytes),camera);
+        var preview=new CrowdScene(NavigationFactory.Create(level),camera);
         preview.Populate(Rules.Initial(level));preview.root.name="Editor Preview";preview.root.tag="EditorOnly";
         Directory.CreateDirectory("Assets/Art/GeneratedPreview");AssetDatabase.Refresh();
         var meshes=new Dictionary<Mesh,Mesh>();var materials=new Dictionary<Material,Material>();

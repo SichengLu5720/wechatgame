@@ -6,6 +6,7 @@ Shader "Stairs/RefinedSurface"
         _StoneTex("Ivory limestone base color",2D)="white" {}
         _StoneDetail("Stone material variation",Range(0,1))=0
         _GameplayLighting("Fixed mobile lighting",Range(0,1))=0
+        _CharacterShadeFloor("Character-only shadow floor",Range(0,1))=0
         _RevealTint("Reveal color",Range(0,1))=1
         _PropDim("Prop focus",Range(0,1))=1
         _Detail("Detail amount",Range(0,1))=.35
@@ -26,7 +27,7 @@ Shader "Stairs/RefinedSurface"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
             #include "AutoLight.cginc"
-            sampler2D _Grain,_StoneTex;float4 _ClothColor,_FogColor;float _Detail,_FogStrength,_FogLevel,_FogDepth,_StoneDetail,_GameplayLighting;
+            sampler2D _Grain,_StoneTex;float4 _ClothColor,_FogColor;float _Detail,_FogStrength,_FogLevel,_FogDepth,_StoneDetail,_GameplayLighting,_CharacterShadeFloor;
             UNITY_INSTANCING_BUFFER_START(ActorProperties)
                 UNITY_DEFINE_INSTANCED_PROP(float, _RevealTint)
                 UNITY_DEFINE_INSTANCED_PROP(float, _PropDim)
@@ -47,7 +48,8 @@ Shader "Stairs/RefinedSurface"
                 base*=lerp(1,stone,_StoneDetail*saturate((i.surface.x-.6)*5));
                 float shade=lerp(SHADOW_ATTENUATION(i),1,_GameplayLighting);float key=saturate(dot(n,l));
                 float sky=.5+.5*n.y;float3 ambient=lerp(float3(.38,.40,.41),float3(.65,.65,.61),sky);
-                float3 lit=base*(ambient+keyColor*key*shade*.58)*i.color.a;
+                float3 lightFactor=(ambient+keyColor*key*shade*.58)*i.color.a;
+                float3 lit=base*max(lightFactor,_CharacterShadeFloor);
                 float3 halfDir=normalize(l+eye);float shine=pow(saturate(dot(n,halfDir)),lerp(80,12,i.surface.x));
                 lit+=keyColor*shine*(1-i.surface.x)*.30*shade;
                 float rim=pow(1-saturate(dot(eye,n)),3)*saturate(n.y+.4)*.045;

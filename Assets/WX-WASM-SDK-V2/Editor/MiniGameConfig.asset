@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ProjectConf:
     projectName: "\u7FA4\u5C9B"
-    Appid: wx581759f0a4dcb425
+    Appid: 
     CDN: 
     assetLoadType: 1
     compressDataPackage: 1
     VideoUrl: 
     relativeDST: Builds/WeChat
-    DST: D:\GameDev\StairsCrowdUnity-Sky-v7\.harness\unity\delivery-final-tz2l2l3v\Builds\WeChat
+    DST: "D:\\\u7FA4\u5C9B-harness\\Builds\\WeChat"
     StreamCDN: 
     bundleHashLength: 32
     bundlePathIdentifier: StreamingAssets;
@@ -58,7 +58,7 @@ MonoBehaviour:
     DeleteStreamingAssets: 1
     ProfilingMemory: 0
     CleanBuild: 0
-    CustomNodePath: C:\Users\charlielu\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe
+    CustomNodePath: 
     autoAdaptScreen: 0
     showMonitorSuggestModal: 0
     enableProfileStats: 0

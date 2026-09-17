@@ -27,9 +27,10 @@ namespace StairsCrowd.Runtime
             foreach(var s in space.Stairs){
                 if(s.polygon!=null){Add(SurfaceRegion.Polygon(s.polygon),s.start.y,.000001f);continue;}
                 var d=new Vector2(s.Direction.x,s.Direction.z);var side=new Vector2(-d.y,d.x);var start=new Vector2(s.start.x,s.start.z);float origin=Vector2.Dot(d,start),across=Vector2.Dot(side,start);
-                for(int i=0;i<s.steps;i++){
-                    float a=origin+s.Length*i/s.steps-(i==0?.001f:0),b=origin+s.Length*(i+1)/s.steps+(i==s.steps-1?.001f:0);
-                    Add(new SurfaceRegion{normals=new[]{d,-d,side,-side},offsets=new[]{b,-a,across+s.width/2+.001f,-across+s.width/2+.001f}},Mathf.Lerp(s.start.y,s.end.y,s.steps==1?0:i/(float)(s.steps-1)),0);
+                for(int i=0;i<s.Treads.Length;i++){
+                    var tread=s.Treads[i];
+                    float a=origin+tread.AlongStart-(i==0?.001f:0),b=origin+tread.AlongEnd+(i==s.Treads.Length-1?.001f:0);
+                    Add(new SurfaceRegion{normals=new[]{d,-d,side,-side},offsets=new[]{b,-a,across+tread.Width/2+.001f,-across+tread.Width/2+.001f}},tread.Height,0);
                 }
             }
         }

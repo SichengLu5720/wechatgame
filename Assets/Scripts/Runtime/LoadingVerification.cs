@@ -38,7 +38,15 @@ namespace StairsCrowd.Runtime
             Check(!game.IsAssembling,"assembly timeout");while(game.IntroVisible)game.ContinueIntro();
             if(game.Home){Check(game.scene.people.Length==0,"home shows gameplay actors");return;}
             Check(game.scene.people.Length==game.board.Level.groups.Length*4,"population size");
-            foreach(var p in game.scene.people){Check(p.root.gameObject.activeInHierarchy,"actor inactive");foreach(var r in p.colored)Check(r.sharedMaterial&&r.GetComponent<MeshFilter>().sharedMesh,"disposed actor resource");}
+            foreach(var p in game.scene.people)
+            {
+                Check(p.root.gameObject.activeInHierarchy,"actor inactive");
+                foreach(var r in p.colored)
+                {
+                    var skin=r as SkinnedMeshRenderer;var filter=r.GetComponent<MeshFilter>();
+                    Check(r.sharedMaterial&&(skin?skin.sharedMesh:filter?filter.sharedMesh:null),"disposed actor resource");
+                }
+            }
         }
         void Prepare()
         {
@@ -58,7 +66,7 @@ namespace StairsCrowd.Runtime
         {
             foreach(var p in game.scene.people){int id=Array.IndexOf(game.scene.people,p);bool hidden=!game.board.Current.revealed[id/4]&&!Rules.Complete(game.board.Level,game.board.Current,p.tag.node);
                 Check((p.hiddenCharacter&&p.hiddenCharacter.activeSelf)==hidden,"stale hidden state after reuse");
-                Check(p.visual.Find("Sky character").gameObject.activeSelf==!hidden,"stale color model visibility");
+                Check(p.ModelParent.Find("Sky character").gameObject.activeSelf==!hidden,"stale color model visibility");
                 Check(!p.IsSelected&&!p.selectionRing.activeSelf,"selection survived level transfer");
             }
         }
@@ -84,7 +92,13 @@ namespace StairsCrowd.Runtime
             Load(0,false);
             for(int level=0;level<3;level++){
                 Prepare();var actor=game.scene.people[0].root;
-                foreach(var step in game.board.Level.solution){Check(game.RequestMove(step.a,step.b),"tutorial move");int guard=0;while(game.motion!=null&&guard++<1000)game.Advance(.025f);Check(game.motion==null,"tutorial movement timeout");}
+                foreach(var step in game.board.Level.solution)
+                {
+                    Check(game.RequestMove(step.a,step.b),"tutorial move");
+                    int guard=0,budget=Mathf.CeilToInt((game.motion!=null?game.motion.duration:0)/.025f)+120;
+                    while(game.motion!=null&&guard++<budget)game.Advance(.025f);
+                    Check(game.motion==null,"tutorial movement timeout");
+                }
                 Check(game.board.Solved,"tutorial completion");game.Advance(.1f);Check(game.TutorialExiting,"tutorial exit did not begin");
                 game.OpenSettings();var origin=game.scene.root.transform.position;game.Advance(1);Check(game.levelIndex==level&&game.scene.root.transform.position==origin,"pause advanced transition");game.CloseSettings();
                 yield return null;yield return null;yield return null;

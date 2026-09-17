@@ -36,12 +36,12 @@ namespace StairsCrowd.Runtime
             if(!IsTutorial||levelIndex!=0||IsAssembling||Home||PropSelection!=0)return;
             string text=TutorialExiting?"正在收纳，下一关即将升起…":board.Level.tip;
             var hint=Style(17,FontStyle.Normal,TextAnchor.MiddleCenter);
-            GUI.Label(new Rect(28,112,w-56,60),text,hint);
+            var layout=GameplayLayout.Current;GUI.Label(layout.Hint,text,hint);
             if(levelIndex!=0||board.Solved||motion!=null)return;
             var first=board.Level.solution[0];int node=selected==first.a?first.b:first.a;
             var point=view.WorldToScreenPoint(space.Centers[node]+Vector3.up*2.8f);
             float scale=Screen.width/w;
-            var rect=new Rect(Mathf.Clamp(point.x/scale-82,8,w-172),Mathf.Clamp((Screen.height-point.y)/scale-18,185,h-190),164,36);
+            var area=layout.Play;var rect=new Rect(Mathf.Clamp(point.x/scale-82,area.xMin,area.xMax-164),Mathf.Clamp((Screen.height-point.y)/scale-18,area.yMin,area.yMax-36),164,36);
             Fill(rect,new Color(.96f,.93f,.85f,.95f));
             GUI.Label(rect,selected==first.a?"② 点击集结点":"① 点击红色人群",Style(16,FontStyle.Bold,TextAnchor.MiddleCenter));
         }

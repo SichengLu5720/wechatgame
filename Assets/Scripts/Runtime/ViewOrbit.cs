@@ -37,10 +37,10 @@ namespace StairsCrowd.Runtime
         public bool ViewPointerDragged {get{return viewPointerDragged;}}
         public void CancelViewPointer(){if(viewPointerPreview&&scene!=null&&board!=null)scene.Highlight(board,selected);viewPointerPreview=false;viewPointerActive=false;viewPointerDragged=false;viewFinger=-1;}
         bool CanUseView(){return !FailureLocked&&!InterfaceBlocksInput&&board!=null&&!editing&&!IntroVisible&&!chooseLevel&&!shareOpen&&!libraryOpen&&!(board.Solved&&!Busy&&!Home);}
-        bool ViewArea(Vector2 point){return view.pixelRect.Contains(point)&&(Home?(point.y>Screen.height*.26f&&point.y<Screen.height*.77f):(point.y>Screen.height*.19f&&point.y<Screen.height*.87f));}
+        bool ViewArea(Vector2 point){return view.pixelRect.Contains(point)&&(Home?(point.y>Screen.height*.26f&&point.y<Screen.height*.77f):GameplayLayout.Current.PlayPixels.Contains(point));}
         public void BeginViewPointer(Vector2 point)
         {
-            CancelViewPointer();if(!CanUseView()||!ViewArea(point))return;
+            CancelViewPointer();if(TuningContains(point)||!CanUseView()||!ViewArea(point))return;
             viewPointerActive=true;viewPointerStart=viewPointerLast=point;
             // Visual response on contact; committing on release preserves drag cancellation.
             if(!Home&&!IsAssembling&&selected<0&&PropSelection==0&&!scene.HasAddition&&!board.Solved){
@@ -50,7 +50,7 @@ namespace StairsCrowd.Runtime
         }
         public void MoveViewPointer(Vector2 point)
         {
-            if(!viewPointerActive)return;if(!CanUseView()){CancelViewPointer();return;}
+            if(!viewPointerActive)return;if(TuningContains(point)||!CanUseView()){CancelViewPointer();return;}
             float threshold=Mathf.Max(8,Screen.width*.018f);
             if(!viewPointerDragged&&(point-viewPointerStart).sqrMagnitude>threshold*threshold){viewPointerDragged=true;viewPointerLast=viewPointerStart;if(viewPointerPreview){scene.Highlight(board,selected);viewPointerPreview=false;}}
             if(UserRotationEnabled&&viewPointerDragged&&PropSelection==0&&!scene.HasAddition){scene.OrbitView((point.x-viewPointerLast.x)/Mathf.Max(1,view.pixelWidth)*180);viewPointerLast=point;}
@@ -63,6 +63,7 @@ namespace StairsCrowd.Runtime
         }
         void TickViewInput()
         {
+            RefreshGameplayLayout();
             if(RuntimeVerification.Active||CloudVerification.Active||SettingsPropsVerification.Active)return;
             if(!CanUseView()){CancelViewPointer();return;}
             if(Input.touchCount>0){
@@ -80,8 +81,8 @@ namespace StairsCrowd.Runtime
             if(Input.GetMouseButton(0))MoveViewPointer(Input.mousePosition);
             if(Input.GetMouseButtonUp(0))EndViewPointer(Input.mousePosition);
         }
-        void OnApplicationFocus(bool focus){PauseDaily(StairsCrowd.Core.DailyPause.Focus,!focus);if(Feedback!=null)Feedback.Suspend(!focus);if(!focus)CancelViewPointer();}
-        void OnApplicationPause(bool paused){PauseDaily(StairsCrowd.Core.DailyPause.Application,paused);if(Feedback!=null)Feedback.Suspend(paused);if(paused)CancelViewPointer();}
+        void OnApplicationFocus(bool focus){PauseDaily(StairsCrowd.Core.DailyPause.Focus,!focus);if(Feedback!=null)Feedback.Suspend(!focus);if(!focus){CancelViewPointer();CancelTuningGesture();}}
+        void OnApplicationPause(bool paused){PauseDaily(StairsCrowd.Core.DailyPause.Application,paused);if(Feedback!=null)Feedback.Suspend(paused);if(paused){CancelViewPointer();CancelTuningGesture();}}
     }
 }
 

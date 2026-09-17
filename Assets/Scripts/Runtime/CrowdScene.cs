@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using StairsCrowd.Core;
 
@@ -7,8 +8,14 @@ namespace StairsCrowd.Runtime
 
     public sealed class PersonView
     {
-        public Transform root,visual,leftLeg,rightLeg,leftArm,rightArm;
+        public Transform root,visual,tuningVisual,leftLeg,rightLeg,leftArm,rightArm;
+        public Transform ModelParent=>tuningVisual?tuningVisual:visual;
         public WaterBirdVisual waterBird;
+        public CharacterWalkDriver walk;
+        public WalkSpace walkGround;
+        public float remainingDistance=float.PositiveInfinity;
+        public bool PresentationSettled=>walk==null||walk.PresentationSettled;
+        public void TickWalk(float delta,float movingDelta=-1){if(walk!=null)walk.Tick(delta,remainingDistance,movingDelta);}
         ColorReveal colorReveal;
         public bool RevealAnimating=>colorReveal!=null&&colorReveal.Active;
         public bool RevealUsesMask=>colorReveal!=null&&colorReveal.UsesMask;
@@ -79,11 +86,9 @@ namespace StairsCrowd.Runtime
             foreach(var stair in space.Stairs){if(!stairRoots.ContainsKey(stair.index)){var link=new GameObject("Stair Link "+stair.index);link.transform.SetParent(root.transform,false);link.transform.position=(stair.start+stair.end)/2;stairRoots.Add(stair.index,link.transform);}activeParent=stairRoots[stair.index];
                 if(stair.polygon!=null){Connector(stair);yield return null;continue;}
                 if(stair.steps==1){if(refined)RefinedBridge(stair);else SkyBridge(stair);yield return null;continue;}
-                float length=stair.Length/stair.steps;
                 for(int i=0;i<stair.steps;i++){
-                    Vector3 top=Vector3.Lerp(stair.start,stair.end,(i+.5f)/stair.steps);top.y=Mathf.Lerp(stair.start.y,stair.end.y,stair.steps==1?0:i/(float)(stair.steps-1));
-                    float thick=.25f+Mathf.Abs(stair.end.y-stair.start.y)/Mathf.Max(1,stair.steps-1);
-                    var step=Box("Stair "+stair.index+" step "+i,top-Vector3.up*(thick/2),new Vector3(stair.width,thick,length),ivory,true);step.transform.rotation=Quaternion.LookRotation(stair.Direction);if(stair.steps==1){step.GetComponent<Renderer>().enabled=false;var surface=PrimitiveGeometry.Create(PrimitiveType.Cube);surface.name="Recessed connector surface";surface.transform.SetParent(step.transform,false);surface.transform.localPosition=new Vector3(0,-.012f/thick,0);Object.DestroyImmediate(surface.GetComponent<Collider>());surface.GetComponent<Renderer>().sharedMaterial=ivory;}
+                    var tread=stair.Treads[i];var top=tread.Center;float thick=tread.Thickness;
+                    var step=Box("Stair "+stair.index+" step "+i,top-Vector3.up*(thick/2),new Vector3(tread.Width,thick,tread.Length),ivory,true);step.transform.rotation=Quaternion.LookRotation(stair.Direction);if(stair.steps==1){step.GetComponent<Renderer>().enabled=false;var surface=PrimitiveGeometry.Create(PrimitiveType.Cube);surface.name="Recessed connector surface";surface.transform.SetParent(step.transform,false);surface.transform.localPosition=new Vector3(0,-.012f/thick,0);Object.DestroyImmediate(surface.GetComponent<Collider>());surface.GetComponent<Renderer>().sharedMaterial=ivory;}
                     if(refined){step.GetComponent<MeshFilter>().sharedMesh=refined.step;step.GetComponent<Renderer>().sharedMaterial=refinedStone;}
                 }
                 Vector3 side=Vector3.Cross(Vector3.up,stair.Direction)*(stair.width/2+.085f);
@@ -92,7 +97,7 @@ namespace StairsCrowd.Runtime
                 yield return null;
             }
             var batching=BatchArchitecture();while(batching.MoveNext())yield return null;
-            BuildCloudWorld();
+            BuildCloudWorld();PrepareTuningVisuals();
         }
         void DashedSortingBoundary(int node,Vector3 center)
         {
@@ -122,7 +127,7 @@ namespace StairsCrowd.Runtime
         void Connector(StairSurface stair)
         {
             var go=new GameObject("Flush edge landing");go.transform.SetParent(activeParent,false);go.transform.position=stair.start;go.layer=8;
-            var mesh=PlatformMesh.Connector(stair.polygon,stair.start,.25f);ownedMeshes.Add(mesh);var collider=go.AddComponent<MeshCollider>();collider.sharedMesh=mesh;collider.convex=true;surfaces.Add(collider);
+            var mesh=PlatformMesh.Connector(stair.polygon.ToArray(),stair.start,WalkGeometryConfig.TreadBaseThickness);ownedMeshes.Add(mesh);var collider=go.AddComponent<MeshCollider>();collider.sharedMesh=mesh;collider.convex=true;surfaces.Add(collider);
             var visual=new GameObject("Ivory landing");visual.transform.SetParent(go.transform,false);visual.transform.localPosition=Vector3.down*.008f;visual.AddComponent<MeshFilter>().sharedMesh=mesh;visual.AddComponent<MeshRenderer>().sharedMaterial=ivory;
             // Follow the actual convex landing outline, including triangular joins.
             for(int i=0;i<stair.polygon.Length;i++){var a=stair.polygon[i];var b=stair.polygon[(i+1)%stair.polygon.Length];Beam("Landing edge band",a-Vector3.up*.16f,b-Vector3.up*.16f,.13f,.22f,ivory);}
@@ -156,7 +161,7 @@ namespace StairsCrowd.Runtime
             var mesh=PlatformMesh.Prism(space.Sides[node]);ownedMeshes.Add(mesh);go.AddComponent<MeshFilter>().sharedMesh=mesh;go.AddComponent<MeshRenderer>().sharedMaterial=material;
             if(surface){go.layer=8;var collider=go.AddComponent<MeshCollider>();collider.sharedMesh=mesh;collider.convex=true;surfaces.Add(collider);}return go;
         }
-        public void ClearPeople(){if(pool!=null)foreach(var p in pool)if(p!=null){p.SetSelected(false);p.root.gameObject.SetActive(false);}selectedNode=-1;people=System.Array.Empty<PersonView>();}
+        public void ClearPeople(){if(pool!=null)foreach(var p in pool)if(p!=null){p.SetSelected(false);p.waterBird.Reset();p.remainingDistance=float.PositiveInfinity;p.root.gameObject.SetActive(false);}selectedNode=-1;people=System.Array.Empty<PersonView>();}
         GameObject Box(string name,Vector3 center,Vector3 scale,Material mat,bool surface)
         {
             var go=PrimitiveGeometry.Create(PrimitiveType.Cube);go.name=name;go.transform.SetParent(activeParent?activeParent:root.transform,false);go.transform.position=center;go.transform.localScale=scale;go.GetComponent<Renderer>().sharedMaterial=mat;
@@ -178,7 +183,7 @@ namespace StairsCrowd.Runtime
                 if(hidden&&!p.hiddenCharacter){
                     var prefab=Resources.Load<GameObject>("HiddenCharacter/HiddenCharacter");
                     if(!prefab)throw new System.InvalidOperationException("Hidden character prefab is missing");
-                    p.hiddenCharacter=Object.Instantiate(prefab,p.visual,false);
+                    p.hiddenCharacter=Object.Instantiate(prefab,p.ModelParent,false);
                 }
                 p.SetHiddenVisual(hidden);
                 if(p.hiddenCharacter){if(hidden){
@@ -194,12 +199,15 @@ namespace StairsCrowd.Runtime
             for(int end=Mathf.Min(pool.Length,preparedPeople+count);preparedPeople<end;preparedPeople++){
                 int id=preparedPeople;var material=mystery;
                 var go=new GameObject("Person "+id);go.SetActive(false);go.transform.SetParent(root.transform,false);go.layer=9;
-                var person=new PersonView{root=go.transform,tag=go.AddComponent<PlatformTag>(),presentationLift=BridgeLift};
+                var person=new PersonView{root=go.transform,tag=go.AddComponent<PlatformTag>(),presentationLift=BridgeLift,walkGround=space};
                 var capsule=go.AddComponent<CapsuleCollider>();capsule.radius=WalkSpace.ActorRadius;capsule.height=PersonHeight;capsule.center=Vector3.up*(PersonHeight/2);capsule.isTrigger=true;person.capsule=capsule;
                 person.visual=new GameObject("Character visual").transform;person.visual.SetParent(go.transform,false);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                person.tuningVisual=new GameObject("Character tuning scale").transform;person.tuningVisual.SetParent(person.visual,false);ApplyPersonTuning(person);
+#endif
                 person.selectionRing=new GameObject("Selection ring",typeof(MeshFilter),typeof(MeshRenderer));person.selectionRing.transform.SetParent(go.transform,false);person.selectionRing.transform.localPosition=Vector3.up*.035f;person.selectionRing.GetComponent<MeshFilter>().sharedMesh=selectionMesh;person.selectionRing.GetComponent<MeshRenderer>().sharedMaterial=selectionInk;person.selectionRing.SetActive(false);
                 if(!birdMesh){if(refined){birdMesh=refined.character;skyTrim=null;}else{birdMesh=SkyCharacterMesh.Coat();skyTrim=SkyCharacterMesh.Trim();ownedMeshes.Add(birdMesh);ownedMeshes.Add(skyTrim);foreach(var m in palette)m.SetFloat("_ContactTint",1);foreach(var m in selectedPalette)m.SetFloat("_ContactTint",1);mystery.SetFloat("_ContactTint",1);selectedMystery.SetFloat("_ContactTint",1);}}
-                person.waterBird=new WaterBirdVisual(person,birdMesh,material,skyTrim,ivory);
+                person.waterBird=new WaterBirdVisual(person,birdMesh,material,skyTrim,ivory,characterWalk,space);
                 var colored=new List<Renderer>();foreach(var renderer in go.GetComponentsInChildren<Renderer>(true))if(renderer.sharedMaterial==mystery)colored.Add(renderer);person.colored=colored.ToArray();pool[id]=person;
             }
         }
@@ -207,7 +215,7 @@ namespace StairsCrowd.Runtime
         {
             PreparePeople(space.Level.groups.Length*Rules.MembersPerGroup);people=pool;var positions=space.Positions(state);
             for(int n=0;n<state.queues.Length;n++)foreach(int group in state.queues[n])for(int member=0;member<Rules.MembersPerGroup;member++){
-                int id=group*Rules.MembersPerGroup+member;var person=people[id];person.ResetReveal();person.SetSelected(false);person.visual.localPosition=Vector3.zero;person.root.localScale=Vector3.one;person.waterBird.Reset();person.Pose(positions[id],space.Facing(n),0,false);person.root.gameObject.SetActive(true);
+                int id=group*Rules.MembersPerGroup+member;var person=people[id];person.ResetReveal();person.SetSelected(false);person.visual.localPosition=Vector3.zero;person.root.localScale=Vector3.one;person.Pose(positions[id],space.Facing(n),0,false);person.remainingDistance=float.PositiveInfinity;person.waterBird.Reset();person.root.gameObject.SetActive(true);
             }
             RefreshPeople(state);
         }
@@ -237,6 +245,7 @@ namespace StairsCrowd.Runtime
         }
         public void FitCamera()
         {
+            if(FitGameplayCamera())return;
             if(space.Centers.Length==0){camera.orthographic=true;camera.orthographicSize=12;camera.transform.position=new Vector3(11,22,-22);camera.transform.LookAt(Vector3.up*2);orbitDepth=Vector3.Distance(camera.transform.position,Vector3.up*2);camera.nearClipPlane=.1f;camera.farClipPlane=10000;return;}
             var bounds=new Bounds(space.Centers[0],Vector3.one);foreach(var c in space.Centers)bounds.Encapsulate(c);
             var target=bounds.center-Vector3.up*.35f;camera.orthographic=true;camera.transform.position=target+new Vector3(11,20,-22).normalized*Mathf.Max(34,bounds.size.magnitude*2);camera.transform.LookAt(target);orbitDepth=Vector3.Distance(camera.transform.position,target);camera.nearClipPlane=.1f;camera.farClipPlane=Mathf.Max(1000,bounds.size.magnitude*5+100);
@@ -276,6 +285,7 @@ namespace StairsCrowd.Runtime
         // playable mesh cannot fit. Long decorative columns may extend into fog.
         public void KeepPresentationVisible()
         {
+            if(FitGameplayCamera())return;
             if(HomeFraming||camera.rect!=new Rect(0,0,1,1)||platforms==null||platforms.Length==0)return;
             float minX=float.PositiveInfinity,maxX=float.NegativeInfinity,minY=minX,maxY=maxX;
             var right=camera.transform.right;var up=camera.transform.up;var origin=camera.transform.position;

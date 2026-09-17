@@ -7,62 +7,39 @@ using StairsCrowd.Core;
 
 namespace StairsCrowd.Runtime
 {
-    public sealed class StairSurface
-    {
-        SurfaceRegion footprint;public Vector3[] polygon; public int a,b,index; public Vector3 start,end; public float width=3.4f; public int steps=14;
-        Vector3 direction;float length;bool frameReady;
-        void PrepareFrame(){if(frameReady)return;var delta=Vector3.ProjectOnPlane(end-start,Vector3.up);length=delta.magnitude;direction=delta/length;frameReady=true;}
-        public Vector3 Direction {get{PrepareFrame();return direction;}}
-        public float Length {get{PrepareFrame();return length;}}
-        public bool Height(Vector2 point,out float y)
-        {
-            if(polygon!=null){y=start.y;if(footprint==null)footprint=SurfaceRegion.Polygon(polygon);return footprint.Contains(point);}
-            Vector3 d=Direction;Vector2 delta=point-new Vector2(start.x,start.z);float t=Vector2.Dot(delta,new Vector2(d.x,d.z));float across=Vector2.Dot(delta,new Vector2(-d.z,d.x));
-            if(t<-.001f||t>Length+.001f||Mathf.Abs(across)>width/2+.001f){y=0;return false;}
-            int step=Mathf.Clamp(Mathf.FloorToInt(t/Length*steps),0,steps-1);y=Mathf.Lerp(start.y,end.y,steps==1?0:step/(float)(steps-1));return true;
-        }
-    }
     public sealed class WalkSpace
     {
         internal readonly System.Collections.Concurrent.ConcurrentDictionary<string,MotionPlan> Plans=new System.Collections.Concurrent.ConcurrentDictionary<string,MotionPlan>();
         // The enlarged animated mesh stays inside the reserved footprint, including limbs.
         // The baked footprint includes half a grid cell in each axis. Every point
         // rounded to a valid cell therefore retains its entire physical footprint.
-        public const float LayerHeightScale=1.5f;
-        public static float WorldHeight(float height){return 2+height*LayerHeightScale;}
-        public static float LevelHeight(float worldHeight){return (worldHeight-2)/LayerHeightScale;}
-        public static Vector3 WorldCenter(NodeSpec node){return new Vector3(node.x*1.4f,WorldHeight(node.y),-node.z*1.96f);}
+        public static float LayerHeightScale=>WalkGeometryConfig.Default.LayerHeightScale;
+        public static float WorldHeight(float height)=>WalkGeometryConfig.Default.WorldHeight(height);
+        public static float LevelHeight(float worldHeight)=>WalkGeometryConfig.Default.LevelHeight(worldHeight);
+        public static Vector3 WorldCenter(NodeSpec node)=>WalkGeometryConfig.Default.WorldCenter(node);
         public const float ActorRadius=.54f, Separation=1.09f, FootGap=.025f, GridStep=.15f, SeatSpacing=1.24f, GridClearance=.63f;
-        readonly SurfaceRegion[] regions;readonly Vector3[] entryFacing;readonly float platformHalf;public readonly float[] Rotations;public readonly int[] Sides;public readonly LevelSpec Level; public readonly Vector3[] Centers;public readonly StairSurface[] Stairs;
+        readonly SurfaceRegion[] regions;readonly GeometryArray<Vector3> entryFacing;readonly float platformHalf;
+        public readonly WalkGeometry Geometry;
+        public readonly GeometryArray<float> Rotations;public readonly GeometryArray<int> Sides;
+        public readonly LevelSpec Level;public readonly GeometryArray<Vector3> Centers;public readonly GeometryArray<StairSurface> Stairs;
         public readonly float MinX,MinZ;public readonly int Width,Depth;public readonly float[] Heights;public readonly SurfaceMask[] Owners;
-        public WalkSpace(LevelSpec level,byte[] baked=null,bool geometryOnly=false)
+        public string GeometrySignature=>Geometry.Signature;
+        public string CacheStatus {get;private set;}
+        // Direct construction remains available for offline dense navigation checks.
+        // Official play/editor loading uses NavigationFactory.Create (sparse/on demand).
+        public WalkSpace(LevelSpec level,byte[] baked=null,bool geometryOnly=false,WalkGeometryConfig config=null)
         {
-            Level=level;Centers=level.nodes.Select(WorldCenter).ToArray();
-            Sides=level.nodes.Select((n,i)=>{int degree=level.edges.Where(e=>e.a==i||e.b==i).Select(e=>e.a==i?e.b:e.a).Distinct().Count();return degree>4?degree:4;}).ToArray();
-            platformHalf=Sides.Length==0?2.6f:Mathf.Max(2.6f,Sides.Max(s=>s>4?1.85f/Mathf.Tan(Mathf.PI/s):2.6f));
-            Rotations=level.nodes.Select(n=>Mathf.PI/4).ToArray();var stairs=new List<StairSurface>();
-            var ports=new Dictionary<int,Vector3>[Centers.Length];for(int n=0;n<Centers.Length;n++)ports[n]=AssignPorts(n);
-            // Resolve tied face choices together: independently choosing the nearest
-            // face can put the two ends of a cardinal stair on opposite corners.
-            for(int pass=0;pass<4;pass++)foreach(int n in Enumerable.Range(0,Centers.Length).OrderByDescending(i=>ports[i].Count))ports[n]=AssignPorts(n,ports);
-            entryFacing=new Vector3[Centers.Length];for(int n=0;n<Centers.Length;n++){
-                int direction=((level.nodes[n].surfaceDirection%4)+4)%4;
-                entryFacing[n]=Quaternion.AngleAxis(90*(direction+1),Vector3.up)*new Vector3(1,0,1).normalized;
-                // Any terminal platform faces its sole entrance, including transit leaves.
-                if(ports[n].Count==1)entryFacing[n]=ports[n].Values.First();
-            }
-            for(int i=0;i<level.edges.Length;i++){var e=level.edges[i];try{stairs.AddRange(Connection(e.a,e.b,i,ports[e.a][e.b],ports[e.b][e.a]));}catch(Exception){}}
-            Stairs=stairs.ToArray();regions=Centers.Select((c,i)=>SurfaceRegion.Platform(c,Half(i),Sides[i],Rotations[i])).Concat(Stairs.Select(SurfaceRegion.Stair)).ToArray();
-            float extent=Centers.Length==0||Sides.All(s=>s==4)?3.2f:Enumerable.Range(0,Centers.Length).Max(i=>Half(i)/Mathf.Cos(Mathf.PI/Sides[i]))+1;
-            MinX=Centers.Length==0?-extent:Centers.Min(p=>p.x)-extent;MinZ=Centers.Length==0?-extent:Centers.Min(p=>p.z)-extent;
-            Width=Mathf.Max(1,Mathf.CeilToInt(((Centers.Length==0?0:Centers.Max(p=>p.x))+extent-MinX)/GridStep)+1);
-            Depth=Mathf.Max(1,Mathf.CeilToInt(((Centers.Length==0?0:Centers.Max(p=>p.z))+extent-MinZ)/GridStep)+1);
+            Level=level;Geometry=new WalkGeometry(level,config);
+            Centers=Geometry.Centers;Sides=Geometry.Sides;Rotations=Geometry.Rotations;Stairs=Geometry.Stairs;
+            platformHalf=Geometry.PlatformHalf;entryFacing=Geometry.EntryFacing;regions=Geometry.Regions;
+            MinX=Geometry.MinX;MinZ=Geometry.MinZ;Width=Geometry.Width;Depth=Geometry.Depth;
             long cells=(long)Width*Depth;
             Heights=new float[geometryOnly||cells>2000000?0:(int)cells];Owners=new SurfaceMask[Heights.Length];
-            if(baked!=null&&Heights.Length>0){using(var reader=new System.IO.BinaryReader(new System.IO.MemoryStream(baked))){
-                if(reader.ReadInt32()!=311||reader.ReadInt32()!=GeometryHash()||reader.ReadInt32()!=Heights.Length)throw new Exception("Navigation bake does not match level geometry");
-                for(int i=0;i<Heights.Length;i++){Heights[i]=reader.ReadSingle();Owners[i]=new SurfaceMask(reader.ReadBytes(reader.ReadInt32()));}
-            }return;}
+            if(Heights.Length==0){CacheStatus=baked==null?"Sparse":"Sparse: cache bypassed";return;}
+            string reason="Missing";
+            if(baked!=null&&NavigationCache.TryRead(this,baked,out reason)){CacheStatus="Valid";return;}
+            else reason=baked==null?"Missing":reason;
+            CacheStatus=reason;
             for(int i=0;i<Heights.Length;i++){var cell=SampleCell(i);Heights[i]=cell.height;Owners[i]=cell.owners;}
         }
         struct Cell{public float height;public SurfaceMask owners;}
@@ -71,72 +48,26 @@ namespace StairsCrowd.Runtime
         public float HeightAt(long id){return Heights.Length>0?Heights[(int)id]:sparse.GetOrAdd(id,SampleCell).height;}
         public SurfaceMask OwnerAt(long id){return Owners.Length>0?Owners[(int)id]:sparse.GetOrAdd(id,SampleCell).owners;}
 
-        StairSurface[] Connection(int a,int b,int index,Vector3 na,Vector3 nb)
-        {
-            float apronA=.38f,apronB=.38f;Vector3 start=Vector3.zero,end=Vector3.zero;
-            for(int iteration=0;iteration<16;iteration++){
-                start=Centers[a]+na*(Half(a)+apronA);end=Centers[b]+nb*(Half(b)+apronB);
-                var forward=Vector3.ProjectOnPlane(end-start,Vector3.up).normalized;var side=Vector3.Cross(Vector3.up,forward);
-                apronA=Mathf.Lerp(apronA,.38f+1.7f*Mathf.Abs(Vector3.Dot(side,na)),.65f);apronB=Mathf.Lerp(apronB,.38f+1.7f*Mathf.Abs(Vector3.Dot(side,nb)),.65f);
-            }
-            start=Centers[a]+na*(Half(a)+apronA);end=Centers[b]+nb*(Half(b)+apronB);
-            var main=new StairSurface{a=a,b=b,index=index,start=start,end=end,steps=Mathf.Abs(end.y-start.y)<.001f?1:Mathf.Max(2,Mathf.CeilToInt(Mathf.Abs(end.y-start.y)/.22f)+1)};
-            if(main.Length<.4f||Vector3.Dot(main.Direction,na)<.08f||Vector3.Dot(-main.Direction,nb)<.08f)throw new Exception("Connection does not reach both outer faces");
-            return new[]{main,Apron(a,b,index,Centers[a]+na*(Half(a)-.045f),start,na,main.Direction),Apron(a,b,index,Centers[b]+nb*(Half(b)-.045f),end,nb,-main.Direction)};
-        }
-        StairSurface Apron(int a,int b,int index,Vector3 port,Vector3 outer,Vector3 normal,Vector3 direction)
-        {
-            var side=Vector3.Cross(Vector3.up,normal)*1.7f;var endSide=Vector3.Cross(Vector3.up,direction)*1.7f;
-            // An oblique approach can put a corner inside the landing. Use its
-            // convex outline so the deck has no folded triangles or unsupported gaps.
-            var points=new[]{port-side,port+side,outer+endSide,outer-endSide}.OrderBy(p=>p.x).ThenBy(p=>p.z).ToArray();
-            var hull=new List<Vector3>();
-            Func<Vector3,Vector3,Vector3,float> cross=(p,q,r)=>(q.x-p.x)*(r.z-p.z)-(q.z-p.z)*(r.x-p.x);
-            foreach(var p in points){while(hull.Count>=2&&cross(hull[hull.Count-2],hull[hull.Count-1],p)<=0)hull.RemoveAt(hull.Count-1);hull.Add(p);}
-            int lower=hull.Count;for(int i=points.Length-2;i>=0;i--){var p=points[i];while(hull.Count>lower&&cross(hull[hull.Count-2],hull[hull.Count-1],p)<=0)hull.RemoveAt(hull.Count-1);hull.Add(p);}
-            hull.RemoveAt(hull.Count-1);var polygon=hull.ToArray();if(polygon.Length<3)throw new Exception("Degenerate landing");
-            return new StairSurface{a=a,b=b,index=index,start=port,end=outer,steps=1,polygon=polygon};
-        }
-        public Vector3 FaceNormal(int node,int side){float angle=Rotations[node]+side*Mathf.PI*2/Sides[node];return new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle));}
-        Dictionary<int,Vector3> AssignPorts(int node,Dictionary<int,Vector3>[] known=null)
-        {
-            var neighbors=Level.edges.Where(e=>e.a==node||e.b==node).Select(e=>e.a==node?e.b:e.a).Distinct().ToArray();
-            if(neighbors.Length>6){var available=Enumerable.Range(0,Sides[node]).ToList();var assigned=new Dictionary<int,Vector3>();foreach(int neighbor in neighbors){var direction=(Centers[neighbor]-Centers[node]).normalized;int face=available.OrderByDescending(side=>Vector3.Dot(FaceNormal(node,side),direction)).First();available.Remove(face);assigned.Add(neighbor,FaceNormal(node,face));}return assigned;}
-            int[] best=null,current=new int[neighbors.Length];bool[] used=new bool[Sides[node]];float cost=float.PositiveInfinity;
-            Action<int,float> search=null;search=(at,score)=>{if(score>=cost)return;if(at==neighbors.Length){cost=score;best=(int[])current.Clone();return;}var toward=Vector3.ProjectOnPlane(Centers[neighbors[at]]-Centers[node],Vector3.up).normalized;
-                for(int side=0;side<Sides[node];side++)if(!used[side]){var normal=FaceNormal(node,side);float extra=1-Vector3.Dot(toward,normal);
-                    if(known!=null){int neighbor=neighbors[at];var other=known[neighbor][node];var start=Centers[node]+normal*(Half(node)+.7f);var end=Centers[neighbor]+other*(Half(neighbor)+.7f);var dir=Vector3.ProjectOnPlane(end-start,Vector3.up).normalized;extra=extra*.15f+2-Vector3.Dot(normal,dir)-Vector3.Dot(other,-dir);try{Connection(node,neighbor,0,normal,other);}catch(Exception){extra+=1000;}}
-                    used[side]=true;current[at]=side;search(at+1,score+extra);used[side]=false;}};
-            search(0,0);var result=new Dictionary<int,Vector3>();for(int i=0;i<neighbors.Length;i++)result.Add(neighbors[i],FaceNormal(node,best[i]));return result;
-        }
-        public int GeometryHash(){unchecked{int hash=17;hash=hash*31+ActorRadius.GetHashCode();hash=hash*31+Separation.GetHashCode();hash=hash*31+SeatSpacing.GetHashCode();hash=hash*31+GridClearance.GetHashCode();for(int i=0;i<Centers.Length;i++){hash=hash*31+Centers[i].GetHashCode();hash=hash*31+Level.nodes[i].capacity;hash=hash*31+Sides[i];hash=hash*31+Level.nodes[i].surfaceDirection;hash=hash*31+Half(i).GetHashCode();}foreach(var e in Level.edges){hash=hash*31+e.a;hash=hash*31+e.b;}return hash;}}
-        public byte[] Bake(){using(var stream=new System.IO.MemoryStream()){using(var writer=new System.IO.BinaryWriter(stream,System.Text.Encoding.UTF8,true)){writer.Write(311);writer.Write(GeometryHash());writer.Write(Heights.Length);for(int i=0;i<Heights.Length;i++){writer.Write(Heights[i]);var bytes=Owners[i].ToByteArray();writer.Write(bytes.Length);writer.Write(bytes);}}return stream.ToArray();}}
+        public Vector3 FaceNormal(int node,int side)=>Geometry.FaceNormal(node,side);
+        // Compatibility fingerprint; persisted caches use the full SHA-256 signature.
+        public int GeometryHash()=>unchecked((int)Convert.ToUInt32(GeometrySignature.Substring(0,8),16));
+        public byte[] Bake()=>NavigationCache.Write(this);
         public bool Inside(int n,Vector2 point){var region=regions[n];for(int i=0;i<region.normals.Length;i++)if(Vector2.Dot(region.normals[i],point)>region.offsets[i]+.001f)return false;return true;}
         public float Boundary(int n,Vector3 direction){float dot=0;for(int i=0;i<Sides[n];i++){float angle=Rotations[n]+i*Mathf.PI*2/Sides[n];dot=Mathf.Max(dot,direction.x*Mathf.Cos(angle)+direction.z*Mathf.Sin(angle));}return Half(n)/dot;}
         public bool GridSupport(Vector2 point,SurfaceMask mask,out float height){int x=Mathf.RoundToInt((point.x-MinX)/GridStep),z=Mathf.RoundToInt((point.y-MinZ)/GridStep);height=0;if(x<0||z<0||x>=Width||z>=Depth)return false;long id=(long)z*Width+x;height=HeightAt(id);return !float.IsNaN(height)&&(OwnerAt(id)&mask)!=0;}
         public float Half(int n){return platformHalf;}
         public Vector3 Facing(int node){return entryFacing[node];}
-        static readonly int[][] TransitWidths={new[]{2,2},new[]{3,2,3},new[]{4,4,4},new[]{4,4,4,4}};
+        // Permanent physical IDs. Initial subsets are centered and grow symmetrically.
+        static readonly int[] TransitInitialOrder={5,6,9,10,1,7,14,8,2,11,13,4,0,3,12,15};
+        public static int InitialTransitSlot(int index)=>TransitInitialOrder[index];
         public Vector3 Seat(int node,int row,int member,int occupiedRows=4)
         {
             if(Level.nodes[node].transit){
-                // Rounded, staggered crowd silhouettes; logical groups are not
-                // drawn as front/back ranks on transit platforms.
-                int index=row*4+member;
-                int[] widths=TransitWidths[occupiedRows-1];
-                int line=0;while(index>=widths[line]){index-=widths[line];line++;}
-                float x=(index-(widths[line]-1)*.5f)*SeatSpacing;
-                float z=((widths.Length-1)*.5f-line)*SeatSpacing;
-                if(occupiedRows==3){
-                    bool edge=index==0||index==3;
-                    x=Mathf.Sign(x)*(edge?(line==1?2.045f:1.68f):.62f);
-                    z=line==1?0:Mathf.Sign(z)*(edge?1.15f:1.5f);
-                }
-                if(occupiedRows==4){
-                    bool outerX=index==0||index==3,outerZ=line==0||line==3;
-                    x=Mathf.Sign(x)*(outerX?(outerZ?1.68f:2.045f):.65f);
-                    z=Mathf.Sign(z)*(outerZ?(outerX?1.68f:2.045f):.65f);
-                }
+                int slot=occupiedRows==4?row*4+member:InitialTransitSlot(row*4+member);
+                int index=slot%4,line=slot/4;
+                bool outerX=index==0||index==3,outerZ=line==0||line==3;
+                float x=Mathf.Sign(index-1.5f)*(outerX?(outerZ?1.68f:2.045f):.65f);
+                float z=Mathf.Sign(1.5f-line)*(outerZ?(outerX?1.68f:2.045f):.65f);
                 Vector3 facing=Facing(node),across=Vector3.Cross(Vector3.up,facing);
                 return Centers[node]+facing*z+across*x+Vector3.up*FootGap;
             }
@@ -145,9 +76,10 @@ namespace StairsCrowd.Runtime
         }
         public Vector3 SeatFor(State state,int node,int row,int member)
         {
-            int slot=state.actorSlots!=null?state.actorSlots[state.queues[node][row]*4+member]:row*4+member;
-            if(!Level.nodes[node].transit)slot=row*4+slot%4;
-            return Seat(node,slot/4,slot%4,state.queues[node].Count);
+            bool transit=Level.nodes[node].transit;
+            int slot=state.actorSlots!=null?state.actorSlots[state.queues[node][row]*4+member]:(transit?InitialTransitSlot(row*4+member):row*4+member);
+            if(!transit)slot=row*4+slot%4;
+            return Seat(node,slot/4,slot%4,transit?4:state.queues[node].Count);
         }
         public Vector3[] Positions(State state)
         {

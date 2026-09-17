@@ -53,7 +53,7 @@ namespace StairsCrowd.Runtime
         {
             DateTime today=DailyToday().Date;
             Fill(new Rect(0,0,w,h),new Color(.06f,.10f,.14f,.76f));
-            float insetTop=Mathf.Max(16,(Screen.height-Screen.safeArea.yMax)/(Screen.width/w)+12),insetBottom=Mathf.Max(16,Screen.safeArea.y/(Screen.width/w)+12);
+            var layout=GameplayLayout.Current;float insetTop=layout.Gear.y,insetBottom=Mathf.Max(16,h-layout.Safe.yMax+12);
             float width=Mathf.Min(w-32,460),height=Mathf.Min(566,h-insetTop-insetBottom),left=(w-width)/2,top=insetTop+(h-insetTop-insetBottom-height)/2;
             Round(new Rect(left,top+5,width,height),22,new Color(.07f,.15f,.18f,.45f));Round(new Rect(left,top,width,height),22,UiPaper);
             GUI.Label(new Rect(left+48,top+18,width-96,38),"每日挑战",Style(27,FontStyle.Bold,TextAnchor.MiddleCenter));

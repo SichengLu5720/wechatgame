@@ -23,6 +23,7 @@ namespace StairsCrowd.Runtime
         }
         public static void Validate(WalkSpace space)
         {
+            space.Geometry.RequireComplete();
             var platforms=new Vector2[space.Centers.Length][];
             for(int n=0;n<platforms.Length;n++){int sides=space.Sides[n];float radius=(space.Half(n)+.04f)/Mathf.Cos(Mathf.PI/sides);platforms[n]=new Vector2[sides];for(int i=0;i<sides;i++){float a=space.Rotations[n]+(i+.5f)*Mathf.PI*2/sides;platforms[n][i]=Flat(space.Centers[n])+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*radius;}}
             for(int a=0;a<platforms.Length;a++)for(int b=a+1;b<platforms.Length;b++)if(Overlap(platforms[a],platforms[b]))throw new Exception("平台 "+(a+1)+" 与 "+(b+1)+" 重叠，请拉开距离");

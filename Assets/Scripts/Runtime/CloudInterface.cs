@@ -60,11 +60,15 @@ namespace StairsCrowd.Runtime
             if(settingsOpen){DrawSettings(w,h);GUI.matrix=Matrix4x4.identity;return;}
             if(editing){DrawEditor(w,h);GUI.matrix=Matrix4x4.identity;return;}
             if(Home){
+                bool homeEnabled=GUI.enabled;GUI.enabled=homeEnabled&&!FriendLeaderboardOpen&&Time.frameCount>suppressInputThrough;
                 DrawHomeEditorButton(scale);SettingsGear(w,Mathf.Max(64,(Screen.height-Screen.safeArea.yMax)/scale+12));
+                DrawLeaderboardEntry();
                 if(startHero){float heroW=Mathf.Min(w-56,320),heroH=heroW*startHero.height/startHero.width,maxH=h*.18f;if(heroH>maxH){heroH=maxH;heroW=heroH*startHero.width/startHero.height;}GUI.DrawTexture(new Rect((w-heroW)/2,h*.025f,heroW,heroH),startHero,ScaleMode.ScaleToFit,true);}
                 float bottom=Mathf.Max(20,Screen.safeArea.y/scale+16),dailyY=h-bottom-52,adventureY=dailyY-64;
                 if(Button(new Rect(w/2-110,adventureY,220,52),"继续第 "+(levelIndex+1)+" 关",true,new Color(.68f,.78f,.69f)))StartGame();
                 if(Button(new Rect(w/2-110,dailyY,220,52),"每日挑战",true,new Color(.88f,.68f,.62f)))OpenDailyCalendar();
+                GUI.enabled=homeEnabled;
+                if(FriendLeaderboardOpen)DrawFriendLeaderboard(w,h);
                 GUI.matrix=Matrix4x4.identity;return;
             }
             DrawPropHUD(w,h);

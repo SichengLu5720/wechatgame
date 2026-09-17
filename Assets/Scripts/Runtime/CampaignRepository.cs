@@ -15,11 +15,12 @@ namespace StairsCrowd.Runtime
                 if(tutorial.levels[i].provenance.id!="tutorial-v1-"+(i+1).ToString("00"))throw new Exception("Tutorial order mismatch");
                 catalog.levels[i]=tutorial.levels[i];
             }
+            for(int i=0;i<catalog.levels.Length;i++)catalog.levels[i]=LevelPresentation.Apply(catalog.levels[i]);
             return catalog;
         }
         public static bool IsTutorial(LevelSpec level) => level?.provenance?.id?.StartsWith("tutorial-v1-")==true;
         public static bool UsesReferenceLayout(LevelSpec level) => level?.provenance?.generatorVersion=="layout-review-2"||level?.provenance?.generatorVersion=="delivery-2";
-        public static bool GeometryOnly(LevelSpec level) => IsTutorial(level)||UsesReferenceLayout(level);
+        public static bool GeometryOnly(LevelSpec level) => true;
         public static Catalog LoadOriginal()
         {
             var asset=Resources.Load<TextAsset>("campaign-v1");

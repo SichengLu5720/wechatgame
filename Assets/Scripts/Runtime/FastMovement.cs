@@ -26,34 +26,50 @@ namespace StairsCrowd.Runtime
         public static MotionPlan Build(WalkSpace space,State before,Move move)
         {
             if(!move.ok)throw new ArgumentException("Invalid move");var corridors=layouts.GetValue(space,Compile);var after=Rules.Apply(before,move);
-            after.actorSlots=after.actorSlots??new int[space.Level.groups.Length*4];
-            for(int n=0;n<after.queues.Length;n++)for(int row=0;row<after.queues[n].Count;row++)for(int member=0;member<4;member++){
-                int id=after.queues[n][row]*4+member;
-                if(space.Level.nodes[n].transit||move.ids.Contains(after.queues[n][row])||before.actorSlots==null)after.actorSlots[id]=row*4+member;
-            }
-            var plan=new MotionPlan{move=move,initial=space.Positions(before),final=space.Positions(after),finalSlots=after.actorSlots};
+            var initial=space.Positions(before);
             var spine=new List<Vector3>();
             for(int i=1;i<move.path.Length;i++){
                 int a=move.path[i-1],b=move.path[i];int edge=Array.FindIndex(space.Level.edges,e=>e.a==a&&e.b==b||e.a==b&&e.b==a);
                 Vector3[] route;if(edge<0||!corridors.edges.TryGetValue(edge,out route))throw new Exception("Missing floor connection");
                 if(space.Level.edges[edge].a==a)spine.AddRange(route);else spine.AddRange(route.Reverse());
             }
+            for(int i=spine.Count-1;i>0;i--)if(Vector3.Distance(spine[i],spine[i-1])<.0001f)spine.RemoveAt(i);
+            var exitDirection=Vector3.ProjectOnPlane(spine[1]-spine[0],Vector3.up).normalized;
+            var exitSide=Vector3.Cross(Vector3.up,exitDirection);
+            var entryDirection=Vector3.ProjectOnPlane(spine[spine.Count-1]-spine[spine.Count-2],Vector3.up).normalized;
+            var entrySide=Vector3.Cross(Vector3.up,entryDirection);
+            var lanes=new float[initial.Length];var entries=new Vector3[initial.Length];
+            for(int actor=0;actor<initial.Length;actor++){
+                // Preserve lateral order while narrowing towards the stair. Natural
+                // differences in distance retain the crowd's front-to-back spacing.
+                lanes[actor]=Mathf.Clamp(Vector3.Dot(initial[actor]-space.Centers[move.from],exitSide)*(.42f/(1.5f*WalkSpace.SeatSpacing)),-.42f,.42f);
+                entries[actor]=space.Centers[move.to]-entryDirection*(space.Half(move.to)-WalkSpace.ActorRadius)+entrySide*lanes[actor]+Vector3.up*WalkSpace.FootGap;
+            }
+            TransitSlots.Assign(space,before,after,move,entries);
+            var plan=new MotionPlan{move=move,initial=initial,final=space.Positions(after),finalSlots=after.actorSlots};
             var travelers=new HashSet<int>(move.ids.SelectMany(g=>Enumerable.Range(g*4,4)));
             for(int actor=0;actor<plan.initial.Length;actor++){
                 if(Vector3.Distance(plan.initial[actor],plan.final[actor])<.0001f)continue;
-                var points=new List<Vector3>{plan.initial[actor]};if(travelers.Contains(actor)){
-                    float lane=(actor%4-1.5f)*.28f;
-                    for(int i=0;i<spine.Count;i++){var direction=Vector3.ProjectOnPlane(spine[Mathf.Min(i+1,spine.Count-1)]-spine[Mathf.Max(0,i-1)],Vector3.up).normalized;points.Add(spine[i]+Vector3.Cross(Vector3.up,direction)*lane);}
-                }points.Add(plan.final[actor]);
+                if(!travelers.Contains(actor))throw new InvalidOperationException("Resident presentation slot changed during a move");
+                var points=new List<Vector3>{plan.initial[actor]};
+                // Stay inside the convex platform until the narrow apron is reached.
+                // Cutting directly to the stair's outer endpoint clips apron corners.
+                points.Add(space.Centers[move.from]+exitDirection*(space.Half(move.from)-WalkSpace.ActorRadius)+exitSide*lanes[actor]+Vector3.up*WalkSpace.FootGap);
+                // Omit both terminal platform centers. Departure simultaneously
+                // advances and narrows; arrival goes directly from the stair to a
+                // reserved vacancy, without collecting everyone in the center.
+                for(int i=1;i<spine.Count-1;i++){var direction=Vector3.ProjectOnPlane(spine[i+1]-spine[i-1],Vector3.up).normalized;points.Add(spine[i]+Vector3.Cross(Vector3.up,direction)*lanes[actor]);}
+                points.Add(entries[actor]);
+                points.Add(plan.final[actor]);
                 for(int i=points.Count-1;i>0;i--)if(Vector3.Distance(points[i],points[i-1])<.0001f)points.RemoveAt(i);
                 var track=ActorTrack.Create(actor,points);
-                if(travelers.Contains(actor))track.start=Array.IndexOf(move.ids,actor/4)*.08f+(actor%4)*.008f;
-                else{float scale=.22f/track.duration;for(int i=0;i<track.times.Length;i++)track.times[i]*=scale;track.duration=.22f;}
+                track.start=Array.IndexOf(move.ids,actor/4)*.004f+(actor%4)*.001f;
                 plan.tracks.Add(track);plan.duration=Mathf.Max(plan.duration,track.End);
             }
-            if(plan.duration>1.4f){float scale=1.4f/plan.duration;foreach(var track in plan.tracks){track.start*=scale;track.duration*=scale;for(int i=0;i<track.times.Length;i++)track.times[i]*=scale;}plan.duration=1.4f;}
+            bool naturalWalk=CharacterWalkTiming.Enabled;
+            if(!naturalWalk&&plan.duration>1.4f){float scale=1.4f/plan.duration;foreach(var track in plan.tracks){track.start*=scale;track.duration*=scale;for(int i=0;i<track.times.Length;i++)track.times[i]*=scale;}plan.duration=1.4f;}
             foreach(var track in plan.tracks){track.start/=SpeedMultiplier;track.duration/=SpeedMultiplier;for(int i=0;i<track.times.Length;i++)track.times[i]/=SpeedMultiplier;}
-            plan.duration/=SpeedMultiplier;plan.PreparePlayback(space);return plan;
+            plan.duration/=SpeedMultiplier;if(naturalWalk)CharacterWalkTiming.Apply(plan);plan.PreparePlayback(space);return plan;
         }
     }
 }

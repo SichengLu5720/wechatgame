@@ -16,7 +16,7 @@ public static class DailyChallengeVerification
         try {
             // New queues on the already authored geometry of level 11. Never uses levels 15+.
             var source=CampaignRepository.Load().levels[10];var accepted=new List<LevelSpec>();
-            Directory.CreateDirectory("Assets/Resources/daily-navigation");
+            Directory.CreateDirectory("artifacts/navigation/daily");
             for(int seed=200200;seed<200400&&accepted.Count<7;seed++){
                 var l=LevelShare.Copy(source);var random=new System.Random(seed);var colors=Enumerable.Range(0,6).SelectMany(c=>Enumerable.Repeat(c,4)).ToArray();
                 for(int i=colors.Length-1;i>0;i--){int j=random.Next(i+1),c=colors[i];colors[i]=colors[j];colors[j]=c;}
@@ -26,7 +26,7 @@ public static class DailyChallengeVerification
                 l.solution=result.moves;l.name="每日挑战";l.tip="";
                 l.provenance=new LevelProvenance{id="daily-v1-"+accepted.Count.ToString("00"),generatorVersion="daily-offline-1",template=source.provenance.template,difficulty="daily",seed=seed,visited=result.visited,solutionMoves=result.moves.Length,mixedBoundaries=Mixed(l),solverStatus=result.status,reviewStatus="Human Check Pending"};
                 try{Replay(l);}catch(Exception e){Debug.Log("DAILY REJECT "+seed+" "+e.Message);continue;}
-                File.WriteAllBytes("Assets/Resources/daily-navigation/"+l.provenance.id+".bytes",new WalkSpace(l).Bake());accepted.Add(l);Debug.Log("DAILY ACCEPT "+l.provenance.id+" seed="+seed+" moves="+result.moves.Length+" mixed="+Mixed(l));
+                File.WriteAllBytes("artifacts/navigation/daily/"+l.provenance.id+".bytes",NavigationFactory.ForOfflineValidation(l).Bake());accepted.Add(l);Debug.Log("DAILY ACCEPT "+l.provenance.id+" seed="+seed+" moves="+result.moves.Length+" mixed="+Mixed(l));
             }
             Require(accepted.Count==7,"Not enough daily candidates");
             File.WriteAllText("Assets/Resources/daily-v1.json",JsonUtility.ToJson(new Catalog{levels=accepted.ToArray()},true));AssetDatabase.Refresh();
@@ -35,7 +35,7 @@ public static class DailyChallengeVerification
     }
     static int Replay(LevelSpec l)
     {
-        l.Validate();var board=new Board(l);var space=new WalkSpace(l);LayoutSafety.Validate(space);
+        l.Validate();var board=new Board(l);var space=NavigationFactory.Create(l);LayoutSafety.Validate(space);
         var seen=new HashSet<string>{Rules.Key(l,board.Current)};int count=0;
         foreach(var action in l.solution){
             Require(AttemptFailure.Classify(l,board.Current,seen)==AttemptOutcome.Continue,"Witness hits failure "+count);

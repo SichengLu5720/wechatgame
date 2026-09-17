@@ -37,12 +37,12 @@ namespace StairsCrowd.Runtime
                 if(source.Level.nodes.Any(n=>(WalkSpace.WorldCenter(n)-point).sqrMagnitude<49))continue;
                 var copy=LevelShare.Copy(source.Level);int count=copy.nodes.Length;Array.Resize(ref copy.nodes,count+1);copy.nodes[count]=new NodeSpec{x=point.x/1.4f,y=1f+(float)random.NextDouble()*2.6f,z=-point.z/1.96f,capacity=4,transit=true,queue=new int[0]};
                 Array.Resize(ref copy.edges,copy.edges.Length+1);copy.edges[copy.edges.Length-1]=new EdgeSpec{a=target,b=count};copy.solution=new EdgeSpec[0];
-                try{copy.Validate();var candidate=new WalkSpace(copy);LayoutSafety.Validate(candidate);result=copy;resultSpace=candidate;return true;}catch(Exception){/* Bounded search; failures never mutate source state. */}
+                try{copy.Validate();var candidate=NavigationFactory.Create(copy);LayoutSafety.Validate(candidate);result=copy;resultSpace=candidate;return true;}catch(Exception){/* Bounded search; failures never mutate source state. */}
             }return false;
         }
         void RefreshPropWorld(WalkSpace prepared=null)
         {
-            CancelPending();if(space.Level!=board.Level){if(scene!=null)scene.Dispose();space=prepared??new WalkSpace(board.Level);scene=new CrowdScene(space,view);scene.HomeFraming=false;SetViewport();scene.FitCamera();}
+            CancelPending();if(space.Level!=board.Level){if(scene!=null)scene.Dispose();space=prepared??NavigationForBoard();scene=new CrowdScene(space,view);scene.HomeFraming=false;SetViewport();scene.FitCamera();}
             SyncCompletionFeedback(true);Rebuild();WarmMoves();PropTarget=-1;
         }
     }

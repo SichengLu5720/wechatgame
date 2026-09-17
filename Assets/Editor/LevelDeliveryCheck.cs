@@ -17,8 +17,7 @@ public static class LevelDeliveryCheck
             var catalog=JsonUtility.FromJson<Catalog>(File.ReadAllText(Path.Combine(folder,"candidate.json")));
             foreach(var level in catalog.levels){
                 CampaignValidator.Validate(level);
-                var baked=Resources.Load<TextAsset>(CampaignRepository.NavigationPath(level,0));
-                var space=new WalkSpace(level,baked?baked.bytes:null,CampaignRepository.GeometryOnly(level));LayoutSafety.Validate(space);FastMovement.Prepare(space);
+                var space=NavigationFactory.Create(level);LayoutSafety.Validate(space);FastMovement.Prepare(space);
                 var board=new Board(level);
                 foreach(var step in level.solution){
                     string before=Rules.Key(level,board.Current);
